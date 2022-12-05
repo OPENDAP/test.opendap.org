@@ -1,0 +1,390 @@
+#!/bin/bash
+#
+# hyraxctl
+# Can be used to start and stop the docker containers running Hyrax and the
+# # Apache http services, either individually or together.
+# In this implementation Apache httpd connects to Hyrax using AJP on port 8009.
+#
+# The functions are simple. Read the usage statement, and then read the code.
+#
+#
+export H1="#######################################################################"
+export H2="# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+export H3="# -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -"
+
+export HYRAX_NAME=${HYRAX_NAME:-"hyrax"}
+export HTTPD_NAME=${HTTPD_NAME:-"httpd"}
+export HYRAX_HOME=${HYRAX_HOME:-"/home/ubuntu/hyrax"}
+export DATA_MOUNT=${DATA_MOUNT:-"/usr/share/extra-data/test_opendap_org/hyrax"}
+export HYRAX_IMAGE=${HYRAX_IMAGE:-"opendap/hyrax:snapshot"}
+export HTTPD_IMAGE=${HTTPD_IMAGE:-"httpd:latest"}
+export APACHE_HTTPD_HOME=${APACHE_HTTPD_HOME:-"/usr/local/apache2"}
+export HYRAX_NETWORK=${HYRAX_NETWORK:-"hyrax-net"}
+
+#################################################################################
+#
+# show_config()
+#
+function show_config() {
+
+    echo "${H2}" >&2
+    echo "#" >&2
+    echo "# show_config()" >&2
+    echo "#" >&2
+    echo "#     PRIMARY: " >&2
+    echo "#" >&2
+    echo "#               HYRAX_NAME: ${HYRAX_NAME}" >&2
+    echo "#               HYRAX_HOME: ${HYRAX_HOME}" >&2
+    echo "#               DATA_MOUNT: ${DATA_MOUNT}" >&2
+    echo "#              HYRAX_IMAGE: ${HYRAX_IMAGE}" >&2
+    echo "#              HTTPD_IMAGE: ${HTTPD_IMAGE}" >&2
+    echo "#        APACHE_HTTPD_HOME: ${APACHE_HTTPD_HOME}" >&2
+    echo "#            HYRAX_NETWORK: ${HYRAX_NETWORK}" >&2
+    echo "#" >&2
+    echo "#    DERIVED: " >&2
+    echo "#" >&2
+    echo "#                  log_dir: ${log_dir}" >&2
+    echo "#                 data_dir: ${data_dir}" >&2
+    echo "#            olfs_conf_dir: ${olfs_conf_dir}" >&2
+    echo "#        tomcat_server_xml: ${tomcat_server_xml}" >&2
+    echo "# tomcat_server_xml_volume: ${tomcat_server_xml_volume}" >&2
+    echo "#               httpd_conf: ${httpd_conf}" >&2
+    echo "#            httpd_content: ${httpd_content}" >&2
+    echo "#               expires_sh: ${expires_sh}" >&2
+    echo "#                    ncwms: ${ncwms}" >&2
+    echo "#" >&2
+}
+
+#################################################################################
+#
+# config_test_opendap_org()
+#
+# shellcheck disable=SC2120
+function config_test_opendap_org(){
+    local hyrax_home=${1:-"${HYRAX_HOME}"}
+    local data_dir_in=${2:-"${DATA_MOUNT}"}
+
+    echo "${H1}" >&2
+    echo "#" >&2
+    echo "# config_test_opendap_org()" >&2
+    echo "#" >&2
+    echo "#         Using hyrax_home: ${hyrax_home}" >&2
+    echo "#" >&2
+
+    # Location of the log directories for bes, olfs**, and tomcat
+    export log_dir="${hyrax_home}/log"
+
+    # Set up the location of the data direct for Hyrax.
+    # If one is not provided the default ${hyrax_home}/data 
+    # will be used.
+    if test -n "${data_dir_in}"
+    then
+        export data_dir="${data_dir_in}"
+    else
+        export data_dir="${hyrax_home}/data"
+    fi
+    
+    # The location of the OLFS persistent configuration
+    # to be injected into the Hyrax container at /etc/olfs
+    #
+    # **If this is used then the OLFS logs will be written
+    # to ${hyrax_home}/olfs and the log directory 
+    # ${hyrax_home}/log/olfs will be ignored.
+    export olfs_conf_dir="${hyrax_home}/olfs"
+
+    # A Tomcat server.xml file that enables AJP pn 8009
+    export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
+
+    # Creates the tomcat server.xml volume mount key pair for the Docker run command.
+    export tomcat_server_xml_volume=""
+    if test -n "${tomcat_server_xml}"; then
+        export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
+    fi
+
+    #
+    # Variables for configuring Docker launch of httpd
+    #
+    
+    # We inject a modified httpd.conf file
+    export httpd_conf="${hyrax_home}/httpd/httpd.conf"
+    
+    # Our own collection of things that need to be served via http, 
+    # possibly utilizing range get capabilities
+    export httpd_content="${hyrax_home}/httpd/htdocs"
+    
+    # @TODO - Is this still in use? Can we drop it?
+    export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
+
+    # ncWMS host name to be injected into the ncWMS configuration.
+    export ncwms="http://test.opendap.org"
+        
+    show_config
+}
+
+
+#################################################################################
+#
+# config_ndp_local()
+#
+function config_ndp_local(){
+    echo "${H1}" >&2
+    echo "#" >&2
+    echo "# config_ndp_local()" >&2
+    echo "#" >&2
+    export ncwms="http://localhost:8080"
+    export log_dir="/Users/ndp/OPeNDAP/hyrax/log"
+    export data_dir="/Users/ndp/OPeNDAP/hyrax/build/share/hyrax"
+    export olfs_conf_dir="/etc/olfs"
+    # export tomcat_server_xml="/home/ubuntu/hyrax/tomcat/server.xml"
+    # export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
+    
+    show_config
+}
+
+
+#################################################################################
+#
+# make_network_as_needed()
+#
+function make_network_as_needed(){
+    #
+    # Check for the network that will be shared with Apache httpd
+    # If it's not found, create it.
+    #
+    docker network inspect ${HYRAX_NETWORK} > /dev/null 2>&1
+    status=$?
+    if test $status -ne 0 ;
+    then
+        echo "# No Docker network by the name of ${HYRAX_NETWORK} was found. Creating..." >&2
+        docker network create hyrax-net
+        echo "# Created Docker network '${HYRAX_NETWORK}' for Hyrax and Apache httpd." >&2
+        echo "#" >&2
+    else
+        echo "# Docker network '${HYRAX_NETWORK}' exists, using." >&2
+        echo "#" >&2
+    fi
+
+
+}
+
+
+#################################################################################
+#
+# delete_network()
+#
+function delete_network(){
+    # Dump Hyrax Docker Network
+    docker network rm ${HYRAX_NETWORK}
+}
+
+
+#################################################################################
+#
+# start_httpd()
+#
+function start_httpd(){
+    echo "# Starting Docker container for Apache httpd: ${HTTPD_IMAGE}" >&2
+    docker run -d \
+        --name ${HTTPD_NAME} \
+        --net=${HYRAX_NETWORK} \
+        --publish 80:80 \
+        --publish 443:443 \
+        --volume ${httpd_conf}:${APACHE_HTTPD_HOME}/conf/httpd.conf \
+        --volume ${httpd_content}:${APACHE_HTTPD_HOME}/htdocs \
+        --volume ${expires_sh}:${APACHE_HTTPD_HOME}/cgi-bin/expires.sh \
+        "${HTTPD_IMAGE}"
+
+    echo "#" >&2
+    echo "# Docker container: ${HTTPD_IMAGE} STARTED." >&2
+    echo "#" >&2
+
+}
+
+#################################################################################
+#
+# stop_httpd()
+#
+function stop_httpd(){
+    # Dump Hyrax containers
+    docker rm -f "${HTTPD_NAME}"
+}
+
+
+#################################################################################
+#
+# start_hyrax()
+#
+function start_hyrax(){
+
+    echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
+    docker run -d \
+        --name ${HYRAX_NAME} \
+        --net=${HYRAX_NETWORK} \
+        --publish 8009:8009 \
+        --publish 8080:8080 \
+        --publish 8443:8443 \
+        --volume ${data_dir}:/usr/share/hyrax:ro \
+        --volume ${log_dir}/bes:/var/log/bes \
+        --volume ${log_dir}/tomcat/console.log:/var/log/tomcat/console.log \
+        --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
+        --volume ${olfs_conf_dir}:/etc/olfs \
+        ${tomcat_server_xml_volume} \
+        "${HYRAX_IMAGE}" \
+        -e support@opendap.org \
+        -s \
+        -n ${ncwms}
+    echo "#" >&2
+    echo "# Docker container: ${HYRAX_IMAGE} STARTED." >&2
+    echo "#" >&2
+
+}
+
+
+#################################################################################
+#
+# stop_hyrax()
+#
+function stop_hyrax(){
+    # Dump Hyrax containers
+    docker rm -f "${HYRAX_NAME}"
+}
+
+
+#################################################################################
+#
+# start_all()
+#
+function start_all(){
+    make_network_as_needed
+    start_hyrax
+    start_httpd
+}
+
+
+#################################################################################
+#
+# stop_all()
+#
+function stop_all(){
+    # Dump all containers
+    docker rm -f $(docker ps -aq)
+    # Dump the network.
+    docker network rm ${HYRAX_NETWORK}
+}
+
+#################################################################################
+#
+# clean_and_update()
+#
+function clean_and_update(){
+    stop_all
+    # Dump ALL the images
+    docker rmi -f $(docker images -q)
+    # Pull our stuff
+    docker pull ${HYRAX_IMAGE}
+    docker pull ${HYRAX_IMAGE}
+}
+
+function usage(){
+    echo "${H1}" >&2
+    echo "# NAME" >&2
+    echo "#    hyraxctl - hyrax control" >&2
+    echo "#" >&2
+    echo "# SYNOPSIS" >&2
+    echo "#    hyraxctl cmd1 [cmd2 ... cmdN]" >&2
+    echo "#" >&2
+    echo "# DESCRIPTION" >&2
+    echo "#    The hyraxctl utility implements a collection of commands that " >&2
+    echo "#    allow one to start, stop, and update Hyrax and Apache httpd docker" >&2
+    echo "#    images with all of the configuration and resources needed to" >&2
+    echo "#    operate test.opendap.org." >&2
+    echo "#    The commands can be invoked by using one or more in the hyraxctl" >&2
+    echo "#    commandline line invocation:" >&2
+    echo "#    " >&2
+    echo "#        ./hyraxctl show_config" >&2
+    echo "#    " >&2
+    echo "#    Or, for two or more commands:" >&2
+    echo "#    " >&2
+    echo "#        ./hyraxctl config_test_opendap_org start_all" >&2
+    echo "#    " >&2
+    echo "#    Primary configuration values can be exported in the parent shell" >&2
+    echo "#    in order to inject different. Additionally, the file can be" >&2
+    echo "#    sourced:" >&2
+
+    echo "#        source ./hyraxctl" >&2
+    echo "#        . ./hyraxctl" >&2
+    echo "#    " >&2
+    echo "#    After which all of the commands will be directly available in the current" >&2
+    echo "#    shell:" >&2
+    echo "#        # . ./hyraxctl" >&2
+    echo "#        # show_config" >&2
+    echo "#        # start_all" >&2
+    echo "#        # stop_all" >&2
+    echo "#" >&2
+    echo "#     The available commands follow:" >&2
+    echo "#" >&2
+    echo "#              show_config - Sends the configuration state to stderr." >&2
+    echo "# config_test_opendap_org - Configures the shell for deployment on" >&2
+    echo "#                            test.opendap.org (ubuntu Docker host)" >&2
+    echo "#         config_ndp_local - Configures the shell for dev deployment" >&2
+    echo "#                            on ndp's system." >&2
+    echo "#" >&2
+    echo "#                start_all - Makes the docker network, starts Hyrax," >&2
+    echo "#                            starts httpd." >&2
+    echo "#                 stop_all - Stops and deletes all containers, deletes" >&2
+    echo "#                            docker network." >&2
+    echo "#              start_hyrax - Starts Hyrax in the docker engine using" >&2
+    echo "#                            configuration values in the env." >&2
+    echo "#               stop_hyrax - Deletes the running (or not) hyrax " >&2
+    echo "#                            container from the docker engine." >&2
+    echo "#              start_httpd - Starts httpd in the docker engine using" >&2
+    echo "#                            configuration values in the env." >&2
+    echo "#               stop_httpd - Deletes the running (or not) httpd " >&2
+    echo "#                            container from the docker engine." >&2
+    echo "#         clean_and_update - Stops and deletes all containers, deletes" >&2
+    echo "#                            docker network, deletes all images, pulls" >&2
+    echo "#                            Hyrax and httpd by tag" >&2
+    echo "#" >&2
+    echo "#   make_network_as_needed - Creates docker network for Hyrax and" >&2
+    echo "#                            httpd, as needed." >&2
+    echo "#           delete_network - Deletes the docker network for Hyrax" >&2
+    echo "#                            and httpd." >&2
+    echo "#" >&2
+    echo "${H3}" >&2
+}
+
+function run_cmd(){
+    local cmd="${1}"
+
+    if test "${cmd}" == "show_config"; then show_config;
+    elif test "${cmd}" == "config_test_opendap_org"; then config_test_opendap_org;
+    elif test "${cmd}" == "config_ndp_local"; then config_ndp_local;
+    elif test "${cmd}" == "start_all"; then start_all;
+    elif test "${cmd}" == "stop_all"; then stop_all;
+    elif test "${cmd}" == "start_hyrax"; then start_hyrax;
+    elif test "${cmd}" == "stop_hyrax"; then stop_hyrax;
+    elif test "${cmd}" == "start_httpd"; then start_httpd;
+    elif test "${cmd}" == "stop_httpd"; then stop_httpd;
+    elif test "${cmd}" == "clean_and_update"; then clean_and_update;
+    elif test "${cmd}" == "make_network_as_needed"; then make_network_as_needed;
+    elif test "${cmd}" == "delete_network"; then delete_network;
+    else
+        echo "ERROR Unrecognized command: ${cmd}" >&2
+        usage
+    fi
+}
+
+echo "ArgCount: $#" >&2
+if test "$#" -gt 0
+then
+    for a_cmd in "$@"
+    do
+        echo "Running command: ${a_cmd}" >&2
+        run_cmd "${a_cmd}"
+    done
+else
+    usage
+fi
+
+
+
