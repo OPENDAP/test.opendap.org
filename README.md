@@ -26,7 +26,6 @@ and the script is commented.
 
 ## Docker Volume Permissions
 
----
 We use mounted volumes on the docker containers to:
 1. Capture **Hyrax** and **httpd** logs onto the docker host. 
 2. Inject configuration for both **Hyrax** and **httpd**
@@ -96,7 +95,6 @@ for those logs. Here's a listing of the log directories after Hyrax was started:
 
 ## OLFS
 
----
 Mounting just the OLFS logs can be accomplished with
 this volume mount:
 
@@ -120,7 +118,6 @@ new installations of the hyrax docker image.
 
 ## Apache httpd and Tomcat
 
----
 Interfacing the hyrax docker container hyrax with Apache **httpd** 
 running in different Docker container all within the same Docker engine. 
 Both **Tomcat** and **httpd** require configuration modifications.
