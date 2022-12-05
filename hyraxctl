@@ -184,7 +184,7 @@ function delete_network(){
 #
 function start_httpd(){
     echo "# Starting Docker container for Apache httpd: ${HTTPD_IMAGE}" >&2
-    docker run \
+    docker run -d \
         --name ${HTTPD_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 80:80 \
@@ -217,7 +217,7 @@ function stop_httpd(){
 function start_hyrax(){
 
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run \
+    docker run -d \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
