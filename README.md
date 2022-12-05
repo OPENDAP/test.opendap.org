@@ -11,6 +11,14 @@ contains configuration files, data, and other related content.
 Also included is a shell script, hyraxctl, that can be used to control the
 dockerized services.
 
+## External Dependencies
+1. **htdocs** - The _test.opendap.org_ site runs not only Hyrax, but also Apache
+httpd. The files that httpd serves on test.opendap.org are not part of
+this project (too big). They can be downloaded from:
+`https://www.opendap.org/pub/too/htdocs.tgz` and unpacked onto the mount point 
+for that Apache httpd data, typically `$TOO_HOME/httpd/htdocs`
+2. 
+
 # hyraxctl
 
 The included shell script _hyraxctl_, can be used to control the

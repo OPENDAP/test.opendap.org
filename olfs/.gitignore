@@ -1,0 +1,9 @@
+*.xml
+*.html
+*.base
+
+cache
+logs
+LocalFileCatalog
+testDocs
+
