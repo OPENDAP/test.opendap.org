@@ -49,7 +49,7 @@ function show_config() {
     echo "#        tomcat_server_xml: ${tomcat_server_xml}" >&2
     echo "# tomcat_server_xml_volume: ${tomcat_server_xml_volume}" >&2
     echo "#               httpd_conf: ${httpd_conf}" >&2
-    echo "#            httpd_content: ${httpd_content}" >&2
+    echo "#           htdocs_content: ${htdocs_content}" >&2
     echo "#               expires_sh: ${expires_sh}" >&2
     echo "#                    ncwms: ${ncwms}" >&2
     echo "#" >&2
@@ -110,7 +110,7 @@ function config_test_opendap_org(){
     
     # Our own collection of things that need to be served via http, 
     # possibly utilizing range get capabilities
-    export httpd_content="${hyrax_home}/httpd/htdocs"
+    export htdocs_content="${hyrax_home}/httpd/htdocs"
     
     # @TODO - Is this still in use? Can we drop it?
     export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
@@ -190,7 +190,7 @@ function start_httpd(){
         --publish 80:80 \
         --publish 443:443 \
         --volume ${httpd_conf}:${APACHE_HTTPD_HOME}/conf/httpd.conf \
-        --volume ${httpd_content}:${APACHE_HTTPD_HOME}/htdocs \
+        --volume ${htdocs_content}:${APACHE_HTTPD_HOME}/htdocs \
         --volume ${expires_sh}:${APACHE_HTTPD_HOME}/cgi-bin/expires.sh \
         "${HTTPD_IMAGE}"
 
