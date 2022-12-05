@@ -20,6 +20,7 @@ export HYRAX_IMAGE=${HYRAX_IMAGE:-"opendap/hyrax:snapshot"}
 export HTTPD_IMAGE=${HTTPD_IMAGE:-"httpd:latest"}
 export APACHE_HTTPD_HOME=${APACHE_HTTPD_HOME:-"/usr/local/apache2"}
 export HYRAX_NETWORK=${HYRAX_NETWORK:-"hyrax-net"}
+export HYRAX_DEPLOYMENT="http://test.opendap.org"
 
 ################################################################################
 #
@@ -116,7 +117,7 @@ function config_test_opendap_org(){
     export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
 
     # ncWMS host name to be injected into the ncWMS configuration.
-    export ncwms="http://test.opendap.org"
+    export ncwms="${HYRAX_DEPLOYMENT}"
         
     show_config
 }
