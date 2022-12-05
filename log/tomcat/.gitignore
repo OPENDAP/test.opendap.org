@@ -1,2 +1,2 @@
-./*.log
-./catalina.out
+*.log
+catalina.out
