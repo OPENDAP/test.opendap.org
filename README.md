@@ -19,6 +19,21 @@ this project (too big). They can be downloaded from:
 for that Apache httpd data, typically `$TOO_HOME/httpd/htdocs`
 2. 
 
+## Maintenance 
+
+1. New Hyrax images mean new UID & GID for the bes user. That means that the 
+deployer needs to launch the hyrax docker image and inspect the _/etc/etc/passwd_
+file in order to locate the bes user's entry. The bes UID and GID should be 
+used to locate or create (as needed) a user on the docker host with the same 
+UID and GID. Then the BES log directory, $HYRAX_HOME/log/bes should be assigned 
+UID and GID of the bes user in the docker container.
+
+2. New Apache httpd docker images will generate new ETags for assets served. 
+This will cause the _libdap4/unit-tests/HTTPConnectTest_ to fail. The test _setup()_
+method will need to be edited to adopt the new ETag. Note that running the test
+in debug (_-d_) will reveal the new ETag for the asset in question.
+
+
 # hyraxctl
 
 The included shell script _hyraxctl_, can be used to control the
