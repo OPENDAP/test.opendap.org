@@ -224,8 +224,9 @@ needed for testing. In the case of some files that are in use with
 dmr++ file (which may or may not be located in this collection on 
 test.opendap.org) the Range Get capabilities of httpd are needed.
 
-4. **expires.sh** - This is the lone file in the test.opendap.org 
-cg-bin directory
+4. **expires.sh** - This is the lone file in 
+http://test.opendap.org/cgi-bin/expires directory and 
 
 
-* _**@TODO Is expires.sh needed?**_
+* _**@TODO Is expires.sh needed?**_ _YES! It is used by libdap4 unit-tests._
+
