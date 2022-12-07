@@ -277,15 +277,31 @@ function stop_all(){
 #
 # clean_and_update()
 #
-function clean_and_update(){
+function clean_and_update_all(){
     stop_all
     # Dump ALL the images
     docker rmi -f $(docker images -q)
     # Pull our stuff
     docker pull ${HYRAX_IMAGE}
-    docker pull ${HYRAX_IMAGE}
+    docker pull ${HTTPD_IMAGE}
 }
 
+function update_httpd() {
+    stop_hyrax
+    docker image rm "${HTTPD_IMAGE}"
+    docker pull "${HTTPD_IMAGE}"
+}
+
+function update_hyrax() {
+    stop_hyrax
+    docker image rm "${HYRAX_IMAGE}"
+    docker pull "${HYRAX_IMAGE}"
+}
+
+################################################################################
+#
+# usage()
+#
 function usage(){
     echo "${H1}" >&2
     echo "# NAME" >&2
