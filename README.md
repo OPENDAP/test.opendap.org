@@ -17,7 +17,12 @@ httpd. The files that httpd serves on test.opendap.org are not part of
 this project (too big). They can be downloaded from:
 `https://www.opendap.org/pub/too/htdocs.tgz` and unpacked onto the mount point 
 for that Apache httpd data, typically `$TOO_HOME/httpd/htdocs`
-2. 
+2. **Test Data**: We have an EFS volume that we use to hold test data. This 
+means the /etc/fstab file needs to be modified to mount the EFS volume in the 
+correct location. For now that's done with an fstab entry like this:
+
+fs-########.efs.us-east-1.amazonaws.com:/ /usr/share/extra-data efs defaults,_netdev 0 0
+
 
 ## Maintenance 
 
