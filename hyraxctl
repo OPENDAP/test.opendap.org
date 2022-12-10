@@ -355,7 +355,7 @@ function usage(){
     echo "#     The available commands follow:" >&2
     echo "#" >&2
     echo "#              show_config - Sends the configuration state to stderr." >&2
-    echo "# config_test_opendap_org - Configures the shell for deployment on" >&2
+    echo "#  config_test_opendap_org - Configures the shell for deployment on" >&2
     echo "#                            test.opendap.org (ubuntu Docker host)" >&2
     echo "#         config_ndp_local - Configures the shell for dev deployment" >&2
     echo "#                            on ndp's system." >&2
