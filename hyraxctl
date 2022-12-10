@@ -206,9 +206,20 @@ function start_httpd(){
 # stop_httpd()
 #
 function stop_httpd(){
-    # Dump Hyrax containers
+    # Dump httpd container
     docker rm -f "${HTTPD_NAME}"
 }
+
+################################################################################
+#
+# update_httpd()
+#
+function update_httpd() {
+    docker pull "${HTTPD_IMAGE}"
+    stop_httpd
+    start_httpd
+}
+
 
 
 ################################################################################
@@ -239,16 +250,24 @@ function start_hyrax(){
     echo "#" >&2
 
 }
-
-
 ################################################################################
 #
 # stop_hyrax()
 #
 function stop_hyrax(){
-    # Dump Hyrax containers
+    # Dump Hyrax container
     docker rm -f "${HYRAX_NAME}"
 }
+################################################################################
+#
+# update_hyrax()
+#
+function update_hyrax() {
+    docker pull "${HYRAX_IMAGE}"
+    stop_hyrax
+    start_hyrax
+}
+
 
 
 ################################################################################
@@ -286,17 +305,6 @@ function clean_and_update_all(){
     docker pull ${HTTPD_IMAGE}
 }
 
-function update_httpd() {
-    stop_hyrax
-    docker image rm "${HTTPD_IMAGE}"
-    docker pull "${HTTPD_IMAGE}"
-}
-
-function update_hyrax() {
-    stop_hyrax
-    docker image rm "${HYRAX_IMAGE}"
-    docker pull "${HYRAX_IMAGE}"
-}
 
 ################################################################################
 #
@@ -354,10 +362,16 @@ function usage(){
     echo "#                            configuration values in the env." >&2
     echo "#               stop_hyrax - Deletes the running (or not) hyrax " >&2
     echo "#                            container from the docker engine." >&2
+    echo "#             update_hyrax - Pulls the latest HYRAX_IMAGE tag (currently: " >&2
+    echo "#                            ${HYRAX_IMAGE}), stops the Hyrax container," >&2
+    echo "#                            and then starts the (possibly updated) image." >&2
     echo "#              start_httpd - Starts httpd in the docker engine using" >&2
     echo "#                            configuration values in the env." >&2
     echo "#               stop_httpd - Deletes the running (or not) httpd " >&2
     echo "#                            container from the docker engine." >&2
+    echo "#             update_hyrax - Pulls the latest HYRAX_IMAGE tag (currently: " >&2
+    echo "#                            ${HTTPD_IMAGE}), stops the Hyrax container," >&2
+    echo "#                            and then starts the (possibly updated) image." >&2
     echo "#         clean_and_update - Stops and deletes all containers, deletes" >&2
     echo "#                            docker network, deletes all images, pulls" >&2
     echo "#                            Hyrax and httpd by tag" >&2
