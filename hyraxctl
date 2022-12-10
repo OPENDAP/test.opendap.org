@@ -35,12 +35,14 @@ function show_config() {
     echo "#     PRIMARY: " >&2
     echo "#" >&2
     echo "#               HYRAX_NAME: ${HYRAX_NAME}" >&2
+    echo "#               HTTPD_NAME: ${HTTPD_NAME}" >&2
     echo "#               HYRAX_HOME: ${HYRAX_HOME}" >&2
     echo "#               DATA_MOUNT: ${DATA_MOUNT}" >&2
     echo "#              HYRAX_IMAGE: ${HYRAX_IMAGE}" >&2
     echo "#              HTTPD_IMAGE: ${HTTPD_IMAGE}" >&2
     echo "#        APACHE_HTTPD_HOME: ${APACHE_HTTPD_HOME}" >&2
     echo "#            HYRAX_NETWORK: ${HYRAX_NETWORK}" >&2
+    echo "#         HYRAX_DEPLOYMENT: ${HYRAX_DEPLOYMENT}" >&2
     echo "#" >&2
     echo "#    DERIVED: " >&2
     echo "#" >&2
@@ -75,7 +77,7 @@ function config_test_opendap_org(){
     # Location of the log directories for bes, olfs**, and tomcat
     export log_dir="${hyrax_home}/log"
 
-    # Set up the location of the data direct for Hyrax.
+    # Set up the location of the data directory for Hyrax.
     # If one is not provided the default ${hyrax_home}/data 
     # will be used.
     if test -n "${data_dir_in}"
@@ -83,6 +85,7 @@ function config_test_opendap_org(){
         export data_dir="${data_dir_in}"
     else
         export data_dir="${hyrax_home}/data"
+        echo "# Using default data_dir value of: ${data_dir}" >&2
     fi
     
     # The location of the OLFS persistent configuration
@@ -113,7 +116,10 @@ function config_test_opendap_org(){
     # possibly utilizing range get capabilities
     export htdocs_content="${hyrax_home}/httpd/htdocs"
     
-    # @TODO - Is this still in use? Can we drop it?
+    # Q: Is expires.sh still in use? Can we drop it?
+    # A: Yes it's still in use by libdap4 tests.
+    # Q: Can we drop it?
+    # A: No we can't without fixing various things
     export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
 
     # ncWMS host name to be injected into the ncWMS configuration.
@@ -369,7 +375,7 @@ function usage(){
     echo "#                            configuration values in the env." >&2
     echo "#               stop_httpd - Deletes the running (or not) httpd " >&2
     echo "#                            container from the docker engine." >&2
-    echo "#             update_hyrax - Pulls the latest HYRAX_IMAGE tag (currently: " >&2
+    echo "#             update_httpd - Pulls the latest HYRAX_IMAGE tag (currently: " >&2
     echo "#                            ${HTTPD_IMAGE}), stops the Hyrax container," >&2
     echo "#                            and then starts the (possibly updated) image." >&2
     echo "#         clean_and_update - Stops and deletes all containers, deletes" >&2
