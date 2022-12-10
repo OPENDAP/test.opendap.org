@@ -33,11 +33,10 @@ used to locate or create (as needed) a user on the docker host with the same
 UID and GID. Then the BES log directory, $HYRAX_HOME/log/bes should be assigned 
 UID and GID of the bes user in the docker container.
 
-2. New Apache httpd docker images will generate new ETags for assets served. 
+2. New Apache httpd docker images may generate new ETags for assets served. 
 This will cause the _libdap4/unit-tests/HTTPConnectTest_ to fail. The test _setup()_
 method will need to be edited to adopt the new ETag. Note that running the test
 in debug (_-d_) will reveal the new ETag for the asset in question.
-
 
 # hyraxctl
 
