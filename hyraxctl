@@ -48,6 +48,7 @@ function show_config() {
     echo "#" >&2
     echo "#                  log_dir: ${log_dir}" >&2
     echo "#                 data_dir: ${data_dir}" >&2
+    echo "#       bes_site_conf_file: ${bes_site_conf_file}" >&2
     echo "#            olfs_conf_dir: ${olfs_conf_dir}" >&2
     echo "#        tomcat_server_xml: ${tomcat_server_xml}" >&2
     echo "# tomcat_server_xml_volume: ${tomcat_server_xml_volume}" >&2
@@ -96,6 +97,9 @@ function config_test_opendap_org(){
     # ${hyrax_home}/log/olfs will be ignored.
     export olfs_conf_dir="${hyrax_home}/olfs"
 
+    export bes_site_conf_file="${hyrax_home}/bes/site.conf"
+
+
     # A Tomcat server.xml file that enables AJP pn 8009
     export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
 
@@ -138,11 +142,14 @@ function config_ndp_local(){
     echo "#" >&2
     echo "# config_ndp_local()" >&2
     echo "#" >&2
+    prefix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
+    export hyrax_home="/Users/ndp/OPeNDAP/test.opendap.org"
     export ncwms="http://localhost:8080"
-    export log_dir="/Users/ndp/OPeNDAP/hyrax/log"
-    export data_dir="/Users/ndp/OPeNDAP/hyrax/build/share/hyrax"
-    export olfs_conf_dir="/etc/olfs"
-    # export tomcat_server_xml="/home/ubuntu/hyrax/tomcat/server.xml"
+    export log_dir="${hyrax_home}/log"
+    export data_dir="${prefix}/share/hyrax"
+    export olfs_conf_dir="${hyrax_home}/etc/olfs"
+    export bes_site_conf_file="${hyrax_home}/bes/site.conf"
+    # export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
     # export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
     
     show_config
@@ -242,10 +249,12 @@ function start_hyrax(){
         --publish 8080:8080 \
         --publish 8443:8443 \
         --volume ${data_dir}:/usr/share/hyrax:ro \
+        --volume ${data_dir}:/usr/share/hyrax:ro \
         --volume ${log_dir}/bes:/var/log/bes \
         --volume ${log_dir}/tomcat/console.log:/var/log/tomcat/console.log \
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
+        --volume ${bes_site_conf_file}:/etc/bes/site.conf \
         ${tomcat_server_xml_volume} \
         "${HYRAX_IMAGE}" \
         -e support@opendap.org \
