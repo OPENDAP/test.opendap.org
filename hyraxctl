@@ -246,7 +246,7 @@ function update_httpd() {
 function start_hyrax(){
 
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run  \
+    docker run -d \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
