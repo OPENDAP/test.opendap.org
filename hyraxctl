@@ -387,7 +387,7 @@ function usage(){
     echo "#             update_httpd - Pulls the latest HYRAX_IMAGE tag (currently: " >&2
     echo "#                            ${HTTPD_IMAGE}), stops the Hyrax container," >&2
     echo "#                            and then starts the (possibly updated) image." >&2
-    echo "#         clean_and_update - Stops and deletes all containers, deletes" >&2
+    echo "#     clean_and_update_all - Stops and deletes all containers, deletes" >&2
     echo "#                            docker network, deletes all images, pulls" >&2
     echo "#                            Hyrax and httpd by tag" >&2
     echo "#" >&2
