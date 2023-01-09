@@ -253,7 +253,6 @@ function start_hyrax(){
         --publish 8080:8080 \
         --publish 8443:8443 \
         --volume ${data_dir}:/usr/share/hyrax:ro \
-        --volume ${data_dir}:/usr/share/hyrax:ro \
         --volume ${bes_log_dir}:/var/log/bes \
         --volume ${log_dir}/tomcat/console.log:/var/log/tomcat/console.log \
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
