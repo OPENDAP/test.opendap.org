@@ -432,6 +432,7 @@ then
         run_cmd "${a_cmd}"
     done
 else
+    config_test_opendap_org
     usage
 fi
 
