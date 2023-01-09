@@ -100,6 +100,8 @@ function config_test_opendap_org(){
 
     export bes_site_conf_file="${hyrax_home}/bes/site.conf"
 
+    export bes_log_dir="${log_dir}/bes"
+
 
     # A Tomcat server.xml file that enables AJP pn 8009
     export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
