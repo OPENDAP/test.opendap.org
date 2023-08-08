@@ -485,6 +485,7 @@ function run_cmd(){
     if test "${cmd}" == "show_config"; then show_config;
     elif test "${cmd}" == "config_test_opendap_org"; then config_test_opendap_org;
     elif test "${cmd}" == "config_ndp_local"; then config_ndp_local;
+    elif test "${cmd}" == "config_aws_server"; then config_aws_server;
     elif test "${cmd}" == "start_all"; then start_all;
     elif test "${cmd}" == "stop_all"; then stop_all;
     elif test "${cmd}" == "start_hyrax"; then start_hyrax;
