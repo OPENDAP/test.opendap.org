@@ -166,8 +166,13 @@ function config_ndp_local(){
 #
 # shellcheck disable=SC2120
 function config_aws_server(){
-    export HYRAX_HOME="/home/rocky/test.opendap.org"
-    local hyrax_home="/home/rocky/test.opendap.org"
+    # this says: If a first argument, aks $1, is supplied to the invocation of
+    # this function, use that value. Otherwise use the value of HYRAX_HOME
+    local hyrax_home=${1:-"${HYRAX_HOME}"}
+
+
+    # this says: If a second argument, aka $2, is supplied to the invocation of
+    # this function, use that value. Otherwise use the value of DATA_MOUNT
     local data_dir_in=${2:-"${DATA_MOUNT}"}
 
     echo "${H1}" >&2
