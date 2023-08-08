@@ -166,8 +166,8 @@ function config_ndp_local(){
 #
 # shellcheck disable=SC2120
 function config_aws_server(){
-#    export HYRAX_HOME = "/home/rocky/test.opendap.org"
-    local hyrax_home=${1:"/home/rocky/test.opendap.org""${HYRAX_HOME}"}
+    export HYRAX_HOME="/home/rocky/test.opendap.org"
+    local hyrax_home="/home/rocky/test.opendap.org"
     local data_dir_in=${2:-"${DATA_MOUNT}"}
 
     echo "${H1}" >&2
