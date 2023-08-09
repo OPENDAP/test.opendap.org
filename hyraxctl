@@ -173,7 +173,7 @@ function config_aws_server(){
 
     # this says: If a second argument, aka $2, is supplied to the invocation of
     # this function, use that value. Otherwise use the value of DATA_MOUNT
-    local data_dir_in=${2:-"${DATA_MOUNT}"}
+    local data_dir_in="${2}"
 
     echo "${H1}" >&2
     echo "#" >&2
