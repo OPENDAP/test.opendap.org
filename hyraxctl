@@ -190,10 +190,10 @@ function config_aws_server(){
     # will be used.
     if test -n "${data_dir_in}"
     then
-    export data_dir="${data_dir_in}"
+        export data_dir="${data_dir_in}"
     else
-    export data_dir="${hyrax_home}/data"
-    echo "# Using default data_dir value of: ${data_dir}" >&2
+        export data_dir="${hyrax_home}/data"
+        echo "# Using default data_dir value of: ${data_dir}" >&2
     fi
 
     # The location of the OLFS persistent configuration
@@ -215,7 +215,7 @@ function config_aws_server(){
     # Creates the tomcat server.xml volume mount key pair for the Docker run command.
     export tomcat_server_xml_volume=""
     if test -n "${tomcat_server_xml}"; then
-    export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
+        export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
     fi
 
     #
