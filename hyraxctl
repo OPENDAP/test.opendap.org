@@ -168,7 +168,7 @@ function config_ndp_local(){
 function config_aws_server(){
     # this says: If a first argument, aks $1, is supplied to the invocation of
     # this function, use that value. Otherwise use the value of $HYRAX_HOME
-    local hyrax_home=${1:-"${HYRAX_HOME}"}
+    export hyrax_home=${1:-"${HYRAX_HOME}"}
 
 
     # this says: If a second argument, aka $2, is supplied to the invocation of
