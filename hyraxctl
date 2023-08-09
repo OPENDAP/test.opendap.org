@@ -167,7 +167,7 @@ function config_ndp_local(){
 # shellcheck disable=SC2120
 function config_aws_server(){
     # this says: If a first argument, aks $1, is supplied to the invocation of
-    # this function, use that value. Otherwise use the value of HYRAX_HOME
+    # this function, use that value. Otherwise use the value of $HYRAX_HOME
     local hyrax_home=${1:-"${HYRAX_HOME}"}
 
 
@@ -182,12 +182,12 @@ function config_aws_server(){
     echo "#         Using hyrax_home: ${hyrax_home}" >&2
     echo "#" >&2
 
-# Location of the log directories for bes, olfs**, and tomcat
+    # Location of the log directories for bes, olfs**, and tomcat
     export log_dir="${hyrax_home}/log"
 
-# Set up the location of the data directory for Hyrax.
-# If one is not provided the default ${hyrax_home}/data
-# will be used.
+    # Set up the location of the data directory for Hyrax.
+    # If one is not provided the default ${hyrax_home}/data
+    # will be used.
     if test -n "${data_dir_in}"
     then
     export data_dir="${data_dir_in}"
@@ -196,12 +196,12 @@ function config_aws_server(){
     echo "# Using default data_dir value of: ${data_dir}" >&2
     fi
 
-# The location of the OLFS persistent configuration
-# to be injected into the Hyrax container at /etc/olfs
-#
+    # The location of the OLFS persistent configuration
+    # to be injected into the Hyrax container at /etc/olfs
+    #
     # **If this is used then the OLFS logs will be written
-# to ${hyrax_home}/olfs and the log directory
-# ${hyrax_home}/log/olfs will be ignored.
+    # to ${hyrax_home}/olfs and the log directory
+    # ${hyrax_home}/log/olfs will be ignored.
     export olfs_conf_dir="${hyrax_home}/olfs"
 
     export bes_site_conf_file="${hyrax_home}/bes/site.conf"
@@ -209,33 +209,33 @@ function config_aws_server(){
     export bes_log_dir="${log_dir}/bes"
 
 
-# A Tomcat server.xml file that enables AJP pn 8009
+    # A Tomcat server.xml file that enables AJP pn 8009
     export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
 
-# Creates the tomcat server.xml volume mount key pair for the Docker run command.
+    # Creates the tomcat server.xml volume mount key pair for the Docker run command.
     export tomcat_server_xml_volume=""
     if test -n "${tomcat_server_xml}"; then
     export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
     fi
 
-#
+    #
     # Variables for configuring Docker launch of httpd
-#
+    #
 
-# We inject a modified httpd.conf file
+    # We inject a modified httpd.conf file
     export httpd_conf="${hyrax_home}/httpd/httpd.conf"
 
-# Our own collection of things that need to be served via http,
-# possibly utilizing range get capabilities
+    # Our own collection of things that need to be served via http,
+    # possibly utilizing range get capabilities
     export htdocs_content="${hyrax_home}/httpd/htdocs"
 
-# Q: Is expires.sh still in use? Can we drop it?
-# A: Yes it's still in use by libdap4 tests.
-# Q: Can we drop it?
-# A: No we can't without fixing various things
+    # Q: Is expires.sh still in use? Can we drop it?
+    # A: Yes it's still in use by libdap4 tests.
+    # Q: Can we drop it?
+    # A: No we can't without fixing various things
     export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
 
-# ncWMS host name to be injected into the ncWMS configuration.
+    # ncWMS host name to be injected into the ncWMS configuration.
     export ncwms="${HYRAX_DEPLOYMENT}"
 
     show_config
