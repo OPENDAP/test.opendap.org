@@ -17,7 +17,14 @@ export HTTPD_NAME=${HTTPD_NAME:-"httpd"}
 export HYRAX_HOME=${HYRAX_HOME:-"/home/ubuntu/hyrax"}
 export DATA_MOUNT=${DATA_MOUNT:-"/usr/share/extra-data/test_opendap_org/hyrax"}
 export HYRAX_IMAGE=${HYRAX_IMAGE:-"opendap/hyrax:snapshot"}
-export HTTPD_IMAGE=${HTTPD_IMAGE:-"httpd:latest"}
+
+export HTTPD_IMAGE_DEFAULT="httpd:latest"
+
+# As of 11/16/203 we rolled back to this because of some issue we don't
+# understand in httpd:latest - ndp 11/16/2023
+export HTTPD_IMAGE_DEFAULT="httpd:2.4.56-bullseye"
+export HTTPD_IMAGE=${HTTPD_IMAGE:-"$HTTPD_IMAGE_DEFAULT"}
+
 export APACHE_HTTPD_HOME=${APACHE_HTTPD_HOME:-"/usr/local/apache2"}
 export HYRAX_NETWORK=${HYRAX_NETWORK:-"hyrax-net"}
 export HYRAX_DEPLOYMENT="http://test.opendap.org"
