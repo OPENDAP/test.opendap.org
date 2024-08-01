@@ -252,6 +252,10 @@ function set_file_permissions() {
     echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
     docker run -d --name "${name}" ${HYRAX_IMAGE}
 
+    sleep_time=2
+    echo "Waiting $sleep_time seconds for hyrax to get going..."
+    sleep $sleep_time
+
     local bes_uid
     bes_uid=$(docker logs "${name}" 2>&1 | grep bes_uid | awk '{print $2;}')
     echo "bes_uid: ${bes_uid}" >&2
@@ -263,8 +267,16 @@ function set_file_permissions() {
     echo "# Stopping Hyrax container: ${HYRAX_IMAGE}" >&2
     docker container rm -f "${name}"
 
-    echo "# Setting ownership of ${bes_log_dir}" >&2
-    chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
+    if test -n "$bes_uid" && test -n "$bes_gid"
+    then
+        echo "# Setting ownership of ${bes_log_dir}" >&2
+        chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
+    else
+        echo "ERROR - Failed to determine one or both of bes user uid or gid."
+        return 1
+    fi
+
+    return 0
 }
 
 
@@ -275,6 +287,10 @@ function set_file_permissions() {
 function start_hyrax(){
 
     set_file_permissions
+    if test $? -ne 0
+    then
+        echo "ERROR - Unable to set host file permissions. Hyrax was not started."
+    fi
 
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
     docker run -d \
