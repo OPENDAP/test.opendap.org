@@ -262,7 +262,7 @@ function set_file_permissions() {
 
     local bes_gid
     bes_gid=$(docker logs "${name}" 2>&1 | grep bes_gid | awk '{print $2;}')
-    echo " bes_gid: ${bes_gid}" >&2
+    echo "# bes_gid: ${bes_gid}" >&2
 
     echo "# Stopping Hyrax container: ${HYRAX_IMAGE}" >&2
     docker container rm -f "${name}"
