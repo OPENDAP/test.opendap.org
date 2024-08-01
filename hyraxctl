@@ -290,6 +290,7 @@ function start_hyrax(){
     if test $? -ne 0
     then
         echo "ERROR - Unable to set host file permissions. Hyrax was not started."
+        return 1;
     fi
 
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
