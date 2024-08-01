@@ -29,6 +29,8 @@ export APACHE_HTTPD_HOME=${APACHE_HTTPD_HOME:-"/usr/local/apache2"}
 export HYRAX_NETWORK=${HYRAX_NETWORK:-"hyrax-net"}
 export HYRAX_DEPLOYMENT="http://test.opendap.org"
 
+export THREDDS_CATALOG_ROOT=${THREDDS_CATALOG_ROOT:-""}
+
 ################################################################################
 #
 # show_config()
@@ -244,6 +246,24 @@ function update_httpd() {
     start_httpd
 }
 
+function set_file_permissions() {
+    local name="testy_besty"
+
+    echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
+    docker run -d --name "${name}" ${HYRAX_IMAGE}
+
+    local bes_uid=$(docker logs hyrax 2>&1 | grep bes_uid | awk '{print $2;}')
+    echo "bes_uid: ${bes_uid}" >&2
+
+    local bes_gid=$(docker logs hyrax 2>&1 | grep bes_gid | awk '{print $2;}')
+    echo "bes_gid: ${bes_gid}" >&2
+
+    echo "# Stopping Hyrax container: ${HYRAX_IMAGE}" >&2
+    docker container rm -f "${name}"
+
+    echo "# Setting ownership of ${bes_log_dir}" >&2
+    chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
+}
 
 
 ################################################################################
@@ -252,8 +272,10 @@ function update_httpd() {
 #
 function start_hyrax(){
 
+    set_file_permissions
+
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run -d \
+    docker run \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
