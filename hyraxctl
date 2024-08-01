@@ -253,11 +253,11 @@ function set_file_permissions() {
     docker run -d --name "${name}" ${HYRAX_IMAGE}
 
     local bes_uid
-    bes_uid=$(docker logs hyrax 2>&1 | grep bes_uid | awk '{print $2;}')
+    bes_uid=$(docker logs "${name}" 2>&1 | grep bes_uid | awk '{print $2;}')
     echo "bes_uid: ${bes_uid}" >&2
 
     local bes_gid
-    bes_gid=$(docker logs hyrax 2>&1 | grep bes_gid | awk '{print $2;}')
+    bes_gid=$(docker logs "${name}" 2>&1 | grep bes_gid | awk '{print $2;}')
     echo "bes_gid: ${bes_gid}" >&2
 
     echo "# Stopping Hyrax container: ${HYRAX_IMAGE}" >&2
