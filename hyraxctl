@@ -15,7 +15,7 @@ export H3="# -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 export HYRAX_NAME=${HYRAX_NAME:-"hyrax"}
 export HTTPD_NAME=${HTTPD_NAME:-"httpd"}
 export HYRAX_HOME=${HYRAX_HOME:-"/home/ubuntu/hyrax"}
-export DATA_MOUNT=${DATA_MOUNT:-"/usr/share/extra-data/test_opendap_org/hyrax"}
+export DATA_MOUNT=${DATA_MOUNT:-"/usr/share/hyrax"}
 export HYRAX_IMAGE=${HYRAX_IMAGE:-"opendap/hyrax:snapshot"}
 
 export HTTPD_IMAGE_DEFAULT="httpd:latest"
