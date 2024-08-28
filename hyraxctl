@@ -293,8 +293,10 @@ function start_hyrax(){
         return 1;
     fi
 
+    local disconnect=${disconnect:-"-d"}
+
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run -d \
+    docker run $disconnect \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
