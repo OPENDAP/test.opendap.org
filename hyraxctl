@@ -247,7 +247,7 @@ function update_httpd() {
 }
 
 function get_platform(){
-    local platform=
+    local platform=""
     if test $sys_arch = "arm64"; then platform="--platform linux/amd64"; fi
     echo "$platform"
 }
