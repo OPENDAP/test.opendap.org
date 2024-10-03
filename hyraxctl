@@ -257,42 +257,49 @@ function get_platform(){
 function set_file_permissions() {
     echo "# set_file_permissions()" >&2
 
-    local name="testy_besty"
-
-    local platform=""
-    platform=$( get_platform )
-    echo "# platform: $platform" >&2
-
-    local use_disconnect="-d" # ${disconnect:-"-d"}
-    echo "# use_disconnect: $use_disconnect" >&2
-
-    echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run $use_disconnect $platform --name "${name}" ${HYRAX_IMAGE}
-
-    sleep_time=10
-    echo "# Waiting $sleep_time seconds for hyrax to get going..."
-    sleep $sleep_time
-
-    local bes_uid
-    bes_uid=$(docker logs "${name}" 2>&1 | grep bes_uid | awk '{print $2;}')
-    echo "# bes_uid: ${bes_uid}" >&2
-
-    local bes_gid
-    bes_gid=$(docker logs "${name}" 2>&1 | grep bes_gid | awk '{print $2;}')
-    echo "# bes_gid: ${bes_gid}" >&2
-
-    echo "# Stopping Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker container rm -f "${name}"
-
-    if test -n "$bes_uid" && test -n "$bes_gid"
+    local vers_doc=$( which sw_vers )
+    if test $? -ne 0
     then
-        echo "# Setting ownership of ${bes_log_dir}" >&2
-        sudo chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
-    else
-        echo "ERROR - Failed to determine one or both of bes user uid or gid."
-        return 1
-    fi
+      local name="testy_besty"
 
+      local platform=""
+      platform=$( get_platform )
+      echo "# platform: $platform" >&2
+
+      local use_disconnect="-d" # ${disconnect:-"-d"}
+      echo "# use_disconnect: $use_disconnect" >&2
+
+      echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
+      docker run $use_disconnect $platform --name "${name}" ${HYRAX_IMAGE}
+
+      sleep_time=10
+      echo "# Waiting $sleep_time seconds for hyrax to get going..."
+      sleep $sleep_time
+
+      local bes_uid
+      bes_uid=$(docker logs "${name}" 2>&1 | grep bes_uid | awk '{print $2;}')
+      echo "# bes_uid: ${bes_uid}" >&2
+
+      local bes_gid
+      bes_gid=$(docker logs "${name}" 2>&1 | grep bes_gid | awk '{print $2;}')
+      echo "# bes_gid: ${bes_gid}" >&2
+
+      echo "# Stopping Hyrax container: ${HYRAX_IMAGE}" >&2
+      docker container rm -f "${name}"
+
+      if test -n "$bes_uid" && test -n "$bes_gid"
+      then
+          echo "# Setting ownership of ${bes_log_dir}" >&2
+          sudo chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
+      else
+          echo "ERROR - Failed to determine one or both of bes user uid or gid."
+          return 1
+      fi
+  else
+    echo "Detected OSX, no permissions were changed." >&2
+    echo "$vers_doc" >&2
+
+  fi
     return 0
 }
 
@@ -304,7 +311,7 @@ function set_file_permissions() {
 function start_hyrax(){
     echo "# start_hyrax()" >&2
 
-    # set_file_permissions
+    set_file_permissions
     if test $? -ne 0
     then
         echo "ERROR - Unable to set host file permissions. Hyrax was not started."
