@@ -255,6 +255,8 @@ function get_platform(){
 }
 
 function set_file_permissions() {
+    echo "# set_file_permissions()" >&2
+
     local name="testy_besty"
 
     local platform=""
@@ -300,6 +302,7 @@ function set_file_permissions() {
 # start_hyrax()
 #
 function start_hyrax(){
+    echo "# start_hyrax()" >&2
 
     set_file_permissions
     if test $? -ne 0
