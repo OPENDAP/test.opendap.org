@@ -269,7 +269,7 @@ function set_file_permissions() {
     echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
     docker run $use_disconnect $platform --name "${name}" ${HYRAX_IMAGE}
 
-    sleep_time=2
+    sleep_time=10
     echo "# Waiting $sleep_time seconds for hyrax to get going..."
     sleep $sleep_time
 
