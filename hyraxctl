@@ -265,7 +265,7 @@ function set_file_permissions() {
     echo "# use_disconnect: $use_disconnect" >&2
 
     echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run $disconnect $platform --name "${name}" ${HYRAX_IMAGE}
+    docker run $use_disconnect $platform --name "${name}" ${HYRAX_IMAGE}
 
     sleep_time=2
     echo "# Waiting $sleep_time seconds for hyrax to get going..."
@@ -316,7 +316,7 @@ function start_hyrax(){
     echo "# platform: $platform" >&2
 
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run use_disconnect $platform \
+    docker run $use_disconnect $platform \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
