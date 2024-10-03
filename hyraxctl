@@ -260,9 +260,10 @@ function set_file_permissions() {
     local platform=""
     platform=$( get_platform )
     echo "# platform: $platform" >&2
+    local disconnect=${disconnect:-"-d"}
 
     echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run -d $platform --name "${name}" ${HYRAX_IMAGE}
+    docker run $disconnect $platform --name "${name}" ${HYRAX_IMAGE}
 
     sleep_time=2
     echo "# Waiting $sleep_time seconds for hyrax to get going..."
