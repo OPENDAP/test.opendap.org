@@ -246,11 +246,21 @@ function update_httpd() {
     start_httpd
 }
 
+function get_platform(){
+    local platform=
+    if test $sys_arch = "arm64"; then platform="--platform linux/amd64"; fi
+    echo "$platform"
+}
+
 function set_file_permissions() {
     local name="testy_besty"
+    local sys_arch=$(arch)
+
+    platform=$( get_platform )
+    echo "# platform: $platform" >&2
 
     echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run -d --name "${name}" ${HYRAX_IMAGE}
+    docker run -d $platform --name "${name}" ${HYRAX_IMAGE}
 
     sleep_time=2
     echo "# Waiting $sleep_time seconds for hyrax to get going..."
@@ -295,8 +305,11 @@ function start_hyrax(){
 
     local disconnect=${disconnect:-"-d"}
 
+    platform=$( get_platform )
+    echo "# platform: $platform" >&2
+
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run $disconnect \
+    docker run $disconnect $platform \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
