@@ -282,7 +282,7 @@ function set_file_permissions() {
     if test -n "$bes_uid" && test -n "$bes_gid"
     then
         echo "# Setting ownership of ${bes_log_dir}" >&2
-        chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
+        sudo chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
     else
         echo "ERROR - Failed to determine one or both of bes user uid or gid."
         return 1
