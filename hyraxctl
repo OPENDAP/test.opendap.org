@@ -256,6 +256,7 @@ function set_file_permissions() {
     local name="testy_besty"
     local sys_arch=$(arch)
 
+    local platform=""
     platform=$( get_platform )
     echo "# platform: $platform" >&2
 
@@ -305,6 +306,7 @@ function start_hyrax(){
 
     local disconnect=${disconnect:-"-d"}
 
+    local platform=""
     platform=$( get_platform )
     echo "# platform: $platform" >&2
 
