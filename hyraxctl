@@ -247,6 +247,8 @@ function update_httpd() {
 }
 
 function get_platform(){
+    local sys_arch=$(arch)
+    echo "#sys_arch: sys_arch" >&2
     local platform=""
     if test $sys_arch = "arm64"; then platform="--platform linux/amd64"; fi
     echo "$platform"
@@ -254,7 +256,6 @@ function get_platform(){
 
 function set_file_permissions() {
     local name="testy_besty"
-    local sys_arch=$(arch)
 
     local platform=""
     platform=$( get_platform )
