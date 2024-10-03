@@ -296,9 +296,8 @@ function set_file_permissions() {
           return 1
       fi
   else
-    echo "Detected OSX, no permissions were changed." >&2
-    echo "$vers_doc" >&2
-
+    echo "# Detected OSX, no permissions were changed." >&2
+    sw_vers | awk '{print "#    "$0;}' >&2
   fi
     return 0
 }
