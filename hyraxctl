@@ -261,8 +261,8 @@ function set_file_permissions() {
     platform=$( get_platform )
     echo "# platform: $platform" >&2
 
-    local disconnect=${disconnect:-"-d"}
-    echo "# disconnect: $disconnect" >&2
+    local use_disconnect=${disconnect:-"-d"}
+    echo "# use_disconnect: use_disconnect" >&2
 
     echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
     docker run $disconnect $platform --name "${name}" ${HYRAX_IMAGE}
@@ -308,15 +308,15 @@ function start_hyrax(){
         return 1;
     fi
 
-    local disconnect=${disconnect:-"-d"}
-    echo "# disconnect: $disconnect" >&2
+    local use_disconnect=${disconnect:-"-d"}
+    echo "# use_disconnect: use_disconnect" >&2
 
     local platform=""
     platform=$( get_platform )
     echo "# platform: $platform" >&2
 
     echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
-    docker run $disconnect $platform \
+    docker run use_disconnect $platform \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
