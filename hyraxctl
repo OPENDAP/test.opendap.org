@@ -304,7 +304,7 @@ function set_file_permissions() {
 function start_hyrax(){
     echo "# start_hyrax()" >&2
 
-    set_file_permissions
+    # set_file_permissions
     if test $? -ne 0
     then
         echo "ERROR - Unable to set host file permissions. Hyrax was not started."
