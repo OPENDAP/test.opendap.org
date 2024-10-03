@@ -311,7 +311,7 @@ function start_hyrax(){
         return 1;
     fi
 
-    local use_disconnect=${disconnect:-"-d"}
+    local use_disconnect="" #${disconnect:-"-d"}
     echo "# use_disconnect: $use_disconnect" >&2
 
     local platform=""
