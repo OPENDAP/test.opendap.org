@@ -54,6 +54,7 @@ function show_config() {
     echo "#        APACHE_HTTPD_HOME: ${APACHE_HTTPD_HOME}" >&2
     echo "#            HYRAX_NETWORK: ${HYRAX_NETWORK}" >&2
     echo "#         HYRAX_DEPLOYMENT: ${HYRAX_DEPLOYMENT}" >&2
+    echo "#             HYRAX_MEMORY: ${HYRAX_MEMORY}" >&2
     echo "#" >&2
     echo "#    DERIVED: " >&2
     echo "#" >&2
