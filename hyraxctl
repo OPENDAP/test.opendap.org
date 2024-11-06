@@ -31,7 +31,7 @@ export HYRAX_DEPLOYMENT="http://test.opendap.org"
 
 export THREDDS_CATALOG_ROOT=${THREDDS_CATALOG_ROOT:-""}
 
-export HYRAX_MEMORY=${HYRAX_MEMORY:-"30g"}
+export HYRAX_MEMORY=${HYRAX_MEMORY:-"24g"}
 
 ################################################################################
 #
