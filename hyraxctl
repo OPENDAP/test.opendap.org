@@ -31,6 +31,8 @@ export HYRAX_DEPLOYMENT="http://test.opendap.org"
 
 export THREDDS_CATALOG_ROOT=${THREDDS_CATALOG_ROOT:-""}
 
+export HYRAX_MEMORY=${HYRAX_MEMORY:-"30g"}
+
 ################################################################################
 #
 # show_config()
@@ -52,6 +54,7 @@ function show_config() {
     echo "#        APACHE_HTTPD_HOME: ${APACHE_HTTPD_HOME}" >&2
     echo "#            HYRAX_NETWORK: ${HYRAX_NETWORK}" >&2
     echo "#         HYRAX_DEPLOYMENT: ${HYRAX_DEPLOYMENT}" >&2
+    echo "#             HYRAX_MEMORY: ${HYRAX_MEMORY}" >&2
     echo "#" >&2
     echo "#    DERIVED: " >&2
     echo "#" >&2
@@ -308,6 +311,7 @@ function start_hyrax(){
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
         --volume ${bes_site_conf_file}:/etc/bes/site.conf \
+        --memory=${HYRAX_MEMORY} \
         ${tomcat_server_xml_volume} \
         "${HYRAX_IMAGE}" \
         -e support@opendap.org \
