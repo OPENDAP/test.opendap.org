@@ -8,6 +8,14 @@
 # The functions are simple. Read the usage statement, and then read the code.
 #
 #
+
+##########################################################################
+# loggy()
+#
+function loggy() {
+  echo "# $*" >&2
+}
+
 export H1="#######################################################################"
 export H2="# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 export H3="# -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -"
@@ -281,10 +289,21 @@ function set_file_permissions() {
 
 
 ################################################################################
+# save_logs()
+# Saves the bes log file. The tomcat logs and OLFS logs are already being
+# saved/rolled like a server should.
+function save_logs() {
+    cp "${HYRAX_HOME}/log/bes/bes.log" "${HYRAX_HOME}/log/bes"/$(date +"%Y-%m-%d-%H:%M:%S")"-bes.log"
+}
+
+
+################################################################################
 #
 # start_hyrax()
 #
 function start_hyrax(){
+
+    save_logs
 
     set_file_permissions
     if test $? -ne 0
