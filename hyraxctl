@@ -181,6 +181,7 @@ function make_network_as_needed(){
     # Check for the network that will be shared with Apache httpd
     # If it's not found, create it.
     #
+    local status=
     docker network inspect ${HYRAX_NETWORK} > /dev/null 2>&1
     status=$?
     if test $status -ne 0 ;
