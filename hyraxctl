@@ -269,7 +269,8 @@ function get_platform(){
 function set_file_permissions() {
     echo "# set_file_permissions()" >&2
 
-    local vers_doc=$( which sw_vers )
+    local vers_doc
+    vers_doc=$( which sw_vers )
     if test $? -ne 0
     then
       local name="testy_besty"
@@ -320,7 +321,7 @@ function set_file_permissions() {
 # Saves the bes log file. The tomcat logs and OLFS logs are already being
 # saved/rolled like a server should.
 function save_logs() {
-    cp "${HYRAX_HOME}/log/bes/bes.log" "${HYRAX_HOME}/log/bes"/$(date +"%Y-%m-%d-%H:%M:%S")"-bes.log"
+    cp -v "${HYRAX_HOME}/log/bes/bes.log" "${HYRAX_HOME}/log/bes"/$(date +"%Y-%m-%d-%H:%M:%S")"-bes.log"
 }
 
 
