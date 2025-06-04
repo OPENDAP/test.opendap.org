@@ -419,8 +419,6 @@ function start_hyrax(){
     platform=$( get_platform )
     loggy "${prolog} platform: $platform"
 
-    touch ${log_dir}/tomcat/console.log
-
     loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
     docker run $use_disconnect $platform \
         --name ${HYRAX_NAME} \
