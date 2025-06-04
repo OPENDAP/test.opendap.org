@@ -13,7 +13,7 @@
 # loggy()
 #
 function loggy() {
-  echo "# $*" >&2
+  loggy "#$*" >&2
 }
 
 export H1="#######################################################################"
@@ -46,38 +46,36 @@ export HYRAX_MEMORY=${HYRAX_MEMORY:-"24g"}
 # show_config()
 #
 function show_config() {
-
-    echo "${H2}" >&2
-    echo "#" >&2
-    echo "# show_config()" >&2
-    echo "#" >&2
-    echo "#     PRIMARY: " >&2
-    echo "#" >&2
-    echo "#               HYRAX_NAME: ${HYRAX_NAME}" >&2
-    echo "#               HTTPD_NAME: ${HTTPD_NAME}" >&2
-    echo "#               HYRAX_HOME: ${HYRAX_HOME}" >&2
-    echo "#               DATA_MOUNT: ${DATA_MOUNT}" >&2
-    echo "#              HYRAX_IMAGE: ${HYRAX_IMAGE}" >&2
-    echo "#              HTTPD_IMAGE: ${HTTPD_IMAGE}" >&2
-    echo "#        APACHE_HTTPD_HOME: ${APACHE_HTTPD_HOME}" >&2
-    echo "#            HYRAX_NETWORK: ${HYRAX_NETWORK}" >&2
-    echo "#         HYRAX_DEPLOYMENT: ${HYRAX_DEPLOYMENT}" >&2
-    echo "#             HYRAX_MEMORY: ${HYRAX_MEMORY}" >&2
-    echo "#" >&2
-    echo "#    DERIVED: " >&2
-    echo "#" >&2
-    echo "#                  log_dir: ${log_dir}" >&2
-    echo "#                 data_dir: ${data_dir}" >&2
-    echo "#       bes_site_conf_file: ${bes_site_conf_file}" >&2
-    echo "#              bes_log_dir: ${bes_log_dir}" >&2
-    echo "#            olfs_conf_dir: ${olfs_conf_dir}" >&2
-    echo "#        tomcat_server_xml: ${tomcat_server_xml}" >&2
-    echo "# tomcat_server_xml_volume: ${tomcat_server_xml_volume}" >&2
-    echo "#               httpd_conf: ${httpd_conf}" >&2
-    echo "#           htdocs_content: ${htdocs_content}" >&2
-    echo "#               expires_sh: ${expires_sh}" >&2
-    echo "#                    ncwms: ${ncwms}" >&2
-    echo "#" >&2
+    local prolog="show_config() -"
+    loggy "${prolog} ${H2}"
+    loggy "${prolog} "
+    loggy "${prolog}   PRIMARY: "
+    loggy "${prolog}"
+    loggy "${prolog}             HYRAX_NAME: ${HYRAX_NAME}"
+    loggy "${prolog}             HTTPD_NAME: ${HTTPD_NAME}"
+    loggy "${prolog}             HYRAX_HOME: ${HYRAX_HOME}"
+    loggy "${prolog}             DATA_MOUNT: ${DATA_MOUNT}"
+    loggy "${prolog}            HYRAX_IMAGE: ${HYRAX_IMAGE}"
+    loggy "${prolog}            HTTPD_IMAGE: ${HTTPD_IMAGE}"
+    loggy "${prolog}      APACHE_HTTPD_HOME: ${APACHE_HTTPD_HOME}"
+    loggy "${prolog}          HYRAX_NETWORK: ${HYRAX_NETWORK}"
+    loggy "${prolog}       HYRAX_DEPLOYMENT: ${HYRAX_DEPLOYMENT}"
+    loggy "${prolog}           HYRAX_MEMORY: ${HYRAX_MEMORY}"
+    loggy "${prolog}"
+    loggy "${prolog}  DERIVED: "
+    loggy "${prolog}"
+    loggy "${prolog}                  log_dir: ${log_dir}"
+    loggy "${prolog}                 data_dir: ${data_dir}"
+    loggy "${prolog}       bes_site_conf_file: ${bes_site_conf_file}"
+    loggy "${prolog}              bes_log_dir: ${bes_log_dir}"
+    loggy "${prolog}            olfs_conf_dir: ${olfs_conf_dir}"
+    loggy "${prolog}        tomcat_server_xml: ${tomcat_server_xml}"
+    loggy "${prolog} tomcat_server_xml_volume: ${tomcat_server_xml_volume}"
+    loggy "${prolog}               httpd_conf: ${httpd_conf}"
+    loggy "${prolog}           htdocs_content: ${htdocs_content}"
+    loggy "${prolog}               expires_sh: ${expires_sh}"
+    loggy "${prolog}                    ncwms: ${ncwms}"
+    loggy "${prolog}"
 }
 
 ################################################################################
@@ -86,15 +84,14 @@ function show_config() {
 #
 # shellcheck disable=SC2120
 function config_test_opendap_org(){
+    local prolog="config_test_opendap_org() -"
     local hyrax_home=${1:-"${HYRAX_HOME}"}
     local data_dir_in=${2:-"${DATA_MOUNT}"}
 
-    echo "${H1}" >&2
-    echo "#" >&2
-    echo "# config_test_opendap_org()" >&2
-    echo "#" >&2
-    echo "#         Using hyrax_home: ${hyrax_home}" >&2
-    echo "#" >&2
+    loggy "${prolog} ${H1}"
+    loggy "${prolog} BEGIN"
+    loggy "${prolog} "
+    loggy "${prolog}        Using hyrax_home: ${hyrax_home}"
 
     # Location of the log directories for bes, olfs**, and tomcat
     export log_dir="${hyrax_home}/log"
@@ -107,7 +104,7 @@ function config_test_opendap_org(){
         export data_dir="${data_dir_in}"
     else
         export data_dir="${hyrax_home}/data"
-        echo "# Using default data_dir value of: ${data_dir}" >&2
+        loggy "${prolog} Using default data_dir value of: ${data_dir}"
     fi
     
     # The location of the OLFS persistent configuration
@@ -153,6 +150,9 @@ function config_test_opendap_org(){
     export ncwms="${HYRAX_DEPLOYMENT}"
         
     show_config
+
+    loggy "${prolog} END"
+
 }
 
 
@@ -161,10 +161,10 @@ function config_test_opendap_org(){
 # config_ndp_local()
 #
 function config_ndp_local(){
-    echo "${H1}" >&2
-    echo "#" >&2
-    echo "# config_ndp_local()" >&2
-    echo "#" >&2
+    local prolog="make_network_as_needed() -"
+    loggy "${prolog} ${H1}"
+    loggy "${prolog} BEGIN"
+    loggy "${prolog} "
     prefix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
     export hyrax_home="/Users/ndp/OPeNDAP/test.opendap.org"
     export ncwms="http://localhost:8080"
@@ -177,6 +177,9 @@ function config_ndp_local(){
     # export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
     
     show_config
+
+    loggy "${prolog} END"
+
 }
 
 
@@ -185,6 +188,7 @@ function config_ndp_local(){
 # make_network_as_needed()
 #
 function make_network_as_needed(){
+    local prolog="make_network_as_needed() -"
     #
     # Check for the network that will be shared with Apache httpd
     # If it's not found, create it.
@@ -194,13 +198,13 @@ function make_network_as_needed(){
     status=$?
     if test $status -ne 0 ;
     then
-        echo "# No Docker network by the name of ${HYRAX_NETWORK} was found. Creating..." >&2
+        loggy "${prolog} No Docker network by the name of ${HYRAX_NETWORK} was found. Creating..."
         docker network create hyrax-net
-        echo "# Created Docker network '${HYRAX_NETWORK}' for Hyrax and Apache httpd." >&2
-        echo "#" >&2
+        loggy "${prolog} Created Docker network '${HYRAX_NETWORK}' for Hyrax and Apache httpd."
+        loggy "${prolog} "
     else
-        echo "# Docker network '${HYRAX_NETWORK}' exists, using." >&2
-        echo "#" >&2
+        loggy "${prolog} Docker network '${HYRAX_NETWORK}' exists, using."
+        loggy "${prolog} "
     fi
 
 
@@ -222,7 +226,8 @@ function delete_network(){
 # start_httpd()
 #
 function start_httpd(){
-    echo "# Starting Docker container for Apache httpd: ${HTTPD_IMAGE}" >&2
+    local prolog="start_httpd() -"
+    loggy "${prolog} Starting Docker container for Apache httpd: ${HTTPD_IMAGE}"
     docker run -d \
         --name ${HTTPD_NAME} \
         --net=${HYRAX_NETWORK} \
@@ -233,9 +238,9 @@ function start_httpd(){
         --volume ${expires_sh}:${APACHE_HTTPD_HOME}/cgi-bin/expires.sh \
         "${HTTPD_IMAGE}"
 
-    echo "#" >&2
-    echo "# Docker container: ${HTTPD_IMAGE} STARTED." >&2
-    echo "#" >&2
+    loggy "${prolog} "
+    loggy "${prolog} Docker container: ${HTTPD_IMAGE} STARTED."
+    loggy "${prolog} END"
 
 }
 
@@ -259,9 +264,10 @@ function update_httpd() {
 }
 
 function get_platform(){
+    local prolog="get_platform() -"
     local sys_arch=
     sys_arch=$(arch)
-    echo "# sys_arch: $sys_arch" >&2
+    loggy "${prolog} sys_arch: $sys_arch"
     local platform=""
     if test $sys_arch = "arm64"; then platform="--platform linux/amd64"; fi
     echo "$platform"
@@ -396,12 +402,12 @@ function start_hyrax(){
     set_file_permissions
     if test $? -ne 0
     then
-        echo "ERROR - Unable to set host file permissions. Hyrax was not started."
+        loggy "${prolog} ERROR - Unable to set host file permissions. Hyrax was not started."
         return 1;
     fi
 
     local use_disconnect=${disconnect:-"-d"}
-    loggy "# use_disconnect: $use_disconnect"
+    loggy "${prolog} use_disconnect: $use_disconnect"
 
     local platform=""
     platform=$( get_platform )
@@ -426,9 +432,9 @@ function start_hyrax(){
         -e support@opendap.org \
         -s \
         -n ${ncwms}
-    loggy ""
+    loggy "${prolog}"
     loggy "${prolog} Docker container: ${HYRAX_IMAGE} STARTED."
-    loggy ""
+    loggy "${prolog}"
     loggy "${prolog} END"
 }
 ################################################################################
@@ -436,17 +442,21 @@ function start_hyrax(){
 # stop_hyrax()
 #
 function stop_hyrax(){
+    loggy "stop_hyrax() - BEGIN"
     # Dump Hyrax container
     docker rm -f "${HYRAX_NAME}"
+    loggy "stop_hyrax() - END"
 }
 ################################################################################
 #
 # update_hyrax()
 #
 function update_hyrax() {
+    loggy "update_hyrax() - BEGIN"
     docker pull "${HYRAX_IMAGE}"
     stop_hyrax
     start_hyrax
+    loggy "update_hyrax() - END"
 }
 
 
@@ -456,9 +466,11 @@ function update_hyrax() {
 # start_all()
 #
 function start_all(){
+    loggy "start_all() - BEGIN"
     make_network_as_needed
     start_hyrax
     start_httpd
+    loggy "start_all() - END"
 }
 
 
@@ -467,10 +479,12 @@ function start_all(){
 # stop_all()
 #
 function stop_all(){
+    loggy "stop_all() - BEGIN"
     # Dump all containers
     docker rm -f $(docker ps -aq)
     # Dump the network.
     docker network rm ${HYRAX_NETWORK}
+    loggy "stop_all() - END"
 }
 
 ################################################################################
@@ -478,12 +492,14 @@ function stop_all(){
 # clean_and_update()
 #
 function clean_and_update_all(){
+    loggy "clean_and_update_all() - BEGIN"
     stop_all
     # Dump ALL the images
     docker rmi -f $(docker images -q)
     # Pull our stuff
     docker pull ${HYRAX_IMAGE}
     docker pull ${HTTPD_IMAGE}
+    loggy "clean_and_update_all() - END"
 }
 
 
@@ -492,77 +508,77 @@ function clean_and_update_all(){
 # usage()
 #
 function usage(){
-    echo "${H1}" >&2
-    echo "# NAME" >&2
-    echo "#    hyraxctl - hyrax control" >&2
-    echo "#" >&2
-    echo "# SYNOPSIS" >&2
-    echo "#    hyraxctl cmd1 [cmd2 ... cmdN]" >&2
-    echo "#" >&2
-    echo "# DESCRIPTION" >&2
-    echo "#    The hyraxctl utility implements a collection of commands that " >&2
-    echo "#    allow one to start, stop, and update Hyrax and Apache httpd docker" >&2
-    echo "#    images with all of the configuration and resources needed to" >&2
-    echo "#    operate test.opendap.org." >&2
-    echo "#    The commands can be invoked by using one or more in the hyraxctl" >&2
-    echo "#    commandline line invocation:" >&2
-    echo "#    " >&2
-    echo "#        ./hyraxctl show_config" >&2
-    echo "#    " >&2
-    echo "#    Or, for two or more commands:" >&2
-    echo "#    " >&2
-    echo "#        ./hyraxctl config_test_opendap_org start_all" >&2
-    echo "#    " >&2
-    echo "#    Primary configuration values can be exported in the parent shell" >&2
-    echo "#    in order to inject different. Additionally, the file can be" >&2
-    echo "#    sourced:" >&2
+    loggy "${H1}"
+    loggy "#NAME"
+    loggy "  hyraxctl - hyrax control"
+    loggy ""
+    loggy "#SYNOPSIS"
+    loggy "  hyraxctl cmd1 [cmd2 ... cmdN]"
+    loggy ""
+    loggy "#DESCRIPTION"
+    loggy "  The hyraxctl utility implements a collection of commands that "
+    loggy "  allow one to start, stop, and update Hyrax and Apache httpd docker"
+    loggy "  images with all of the configuration and resources needed to"
+    loggy "  operate test.opendap.org."
+    loggy "  The commands can be invoked by using one or more in the hyraxctl"
+    loggy "  commandline line invocation:"
+    loggy "  "
+    loggy "      ./hyraxctl show_config"
+    loggy "  "
+    loggy "  Or, for two or more commands:"
+    loggy "  "
+    loggy "      ./hyraxctl config_test_opendap_org start_all"
+    loggy "  "
+    loggy "  Primary configuration values can be exported in the parent shell"
+    loggy "  in order to inject different. Additionally, the file can be"
+    loggy "  sourced:"
 
-    echo "#        source ./hyraxctl" >&2
-    echo "#        . ./hyraxctl" >&2
-    echo "#    " >&2
-    echo "#    After which all of the commands will be directly available in the current" >&2
-    echo "#    shell:" >&2
-    echo "#        # . ./hyraxctl" >&2
-    echo "#        # show_config" >&2
-    echo "#        # start_all" >&2
-    echo "#        # stop_all" >&2
-    echo "#" >&2
-    echo "#     The available commands follow:" >&2
-    echo "#" >&2
-    echo "#              show_config - Sends the configuration state to stderr." >&2
-    echo "#  config_test_opendap_org - Configures the shell for deployment on" >&2
-    echo "#                            test.opendap.org (ubuntu Docker host)" >&2
-    echo "#         config_ndp_local - Configures the shell for dev deployment" >&2
-    echo "#                            on ndp's system." >&2
-    echo "#" >&2
-    echo "#                start_all - Makes the docker network, starts Hyrax," >&2
-    echo "#                            starts httpd." >&2
-    echo "#                 stop_all - Stops and deletes all containers, deletes" >&2
-    echo "#                            docker network." >&2
-    echo "#              start_hyrax - Starts Hyrax in the docker engine using" >&2
-    echo "#                            configuration values in the env." >&2
-    echo "#               stop_hyrax - Deletes the running (or not) hyrax " >&2
-    echo "#                            container from the docker engine." >&2
-    echo "#             update_hyrax - Pulls the latest HYRAX_IMAGE tag (currently: " >&2
-    echo "#                            ${HYRAX_IMAGE}), stops the Hyrax container," >&2
-    echo "#                            and then starts the (possibly updated) image." >&2
-    echo "#              start_httpd - Starts httpd in the docker engine using" >&2
-    echo "#                            configuration values in the env." >&2
-    echo "#               stop_httpd - Deletes the running (or not) httpd " >&2
-    echo "#                            container from the docker engine." >&2
-    echo "#             update_httpd - Pulls the latest HYRAX_IMAGE tag (currently: " >&2
-    echo "#                            ${HTTPD_IMAGE}), stops the Hyrax container," >&2
-    echo "#                            and then starts the (possibly updated) image." >&2
-    echo "#     clean_and_update_all - Stops and deletes all containers, deletes" >&2
-    echo "#                            docker network, deletes all images, pulls" >&2
-    echo "#                            Hyrax and httpd by tag" >&2
-    echo "#" >&2
-    echo "#   make_network_as_needed - Creates docker network for Hyrax and" >&2
-    echo "#                            httpd, as needed." >&2
-    echo "#           delete_network - Deletes the docker network for Hyrax" >&2
-    echo "#                            and httpd." >&2
-    echo "#" >&2
-    echo "${H3}" >&2
+    loggy "      source ./hyraxctl"
+    loggy "      . ./hyraxctl"
+    loggy "  "
+    loggy "  After which all of the commands will be directly available in the current"
+    loggy "  shell:"
+    loggy "      # . ./hyraxctl"
+    loggy "      # show_config"
+    loggy "      # start_all"
+    loggy "      # stop_all"
+    loggy ""
+    loggy "   The available commands follow:"
+    loggy ""
+    loggy "            show_config - Sends the configuration state to stderr."
+    loggy "config_test_opendap_org - Configures the shell for deployment on"
+    loggy "                          test.opendap.org (ubuntu Docker host)"
+    loggy "       config_ndp_local - Configures the shell for dev deployment"
+    loggy "                          on ndp's system."
+    loggy ""
+    loggy "              start_all - Makes the docker network, starts Hyrax,"
+    loggy "                          starts httpd."
+    loggy "               stop_all - Stops and deletes all containers, deletes"
+    loggy "                          docker network."
+    loggy "            start_hyrax - Starts Hyrax in the docker engine using"
+    loggy "                          configuration values in the env."
+    loggy "             stop_hyrax - Deletes the running (or not) hyrax "
+    loggy "                          container from the docker engine."
+    loggy "           update_hyrax - Pulls the latest HYRAX_IMAGE tag (currently: "
+    loggy "                          ${HYRAX_IMAGE}), stops the Hyrax container,"
+    loggy "                          and then starts the (possibly updated) image."
+    loggy "            start_httpd - Starts httpd in the docker engine using"
+    loggy "                          configuration values in the env."
+    loggy "             stop_httpd - Deletes the running (or not) httpd "
+    loggy "                          container from the docker engine."
+    loggy "           update_httpd - Pulls the latest HYRAX_IMAGE tag (currently: "
+    loggy "                          ${HTTPD_IMAGE}), stops the Hyrax container,"
+    loggy "                          and then starts the (possibly updated) image."
+    loggy "   clean_and_update_all - Stops and deletes all containers, deletes"
+    loggy "                          docker network, deletes all images, pulls"
+    loggy "                          Hyrax and httpd by tag"
+    loggy ""
+    loggy " make_network_as_needed - Creates docker network for Hyrax and"
+    loggy "                          httpd, as needed."
+    loggy "         delete_network - Deletes the docker network for Hyrax"
+    loggy "                          and httpd."
+    loggy ""
+    loggy "${H3}"
 }
 
 function run_cmd(){
