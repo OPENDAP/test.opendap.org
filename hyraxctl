@@ -260,7 +260,7 @@ function update_httpd() {
 
 function get_platform(){
     local sys_arch=$(arch)
-    echo "# sys_arch: sys_arch" >&2
+    echo "# sys_arch: $sys_arch" >&2
     local platform=""
     if test $sys_arch = "arm64"; then platform="--platform linux/amd64"; fi
     echo "$platform"
