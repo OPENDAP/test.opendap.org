@@ -314,7 +314,8 @@ function set_file_permissions() {
     loggy "${prolog} Detected OSX, no permissions were changed."
     loggy $(sw_vers)
   fi
-    return 0
+  loggy "${prolog} END"
+  return 0
 }
 
 
@@ -323,15 +324,17 @@ function set_file_permissions() {
 # Saves the bes log file. The tomcat logs and OLFS logs are already being
 # saved/rolled like a server should.
 function save_hyrax_logs() {
+    local prolog="save_hyrax_logs() -"
+    loggy "${prolog} BEGIN"
 
     local target_dir=${HYRAX_HOME}/crash_logs
-    loggy "target_dir: $target_dir"
+    loggy "${prolog} target_dir: $target_dir"
 
     mkdir -pv "$target_dir"
 
     local date_tag=
     date_tag=$(date +"%Y-%m-%d-%H:%M:%S")
-    loggy "date_tag: $date_tag"
+    loggy "${prolog} date_tag: $date_tag"
 
     # Save BES log
     cp -v "${HYRAX_HOME}/log/bes/bes.log" "${target_dir}/${date_tag}-bes.log"
@@ -350,7 +353,7 @@ function save_hyrax_logs() {
     do
       cp -rv "${HYRAX_HOME}/log/tomcat/$log" "${target_dir}/${date_tag}-tomcat-${log}"
     done
-
+    loggy "${prolog} END"
 }
 
 
@@ -359,7 +362,8 @@ function save_hyrax_logs() {
 # start_hyrax()
 #
 function start_hyrax(){
-    echo "# start_hyrax()" >&2
+    local prolog="start_hyrax() -"
+    loggy "${prolog} BEGIN"
 
     save_hyrax_logs
 
@@ -371,13 +375,13 @@ function start_hyrax(){
     fi
 
     local use_disconnect=${disconnect:-"-d"}
-    echo "# use_disconnect: $use_disconnect" >&2
+    loggy "# use_disconnect: $use_disconnect"
 
     local platform=""
     platform=$( get_platform )
-    echo "# platform: $platform" >&2
+    loggy "${prolog} platform: $platform"
 
-    echo "# Starting Hyrax container: ${HYRAX_IMAGE}" >&2
+    loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
     docker run $use_disconnect $platform \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
@@ -396,10 +400,10 @@ function start_hyrax(){
         -e support@opendap.org \
         -s \
         -n ${ncwms}
-    echo "#" >&2
-    echo "# Docker container: ${HYRAX_IMAGE} STARTED." >&2
-    echo "#" >&2
-
+    loggy ""
+    loggy "${prolog} Docker container: ${HYRAX_IMAGE} STARTED."
+    loggy ""
+    loggy "${prolog} END"
 }
 ################################################################################
 #
