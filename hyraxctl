@@ -16,9 +16,9 @@ function loggy() {
   echo "#$*" >&2
 }
 
-export H1="#######################################################################"
-export H2="# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-export H3="# -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -"
+export H1="######################################################################"
+export H2="- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+export H3="-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -"
 
 export HYRAX_NAME=${HYRAX_NAME:-"hyrax"}
 export HTTPD_NAME=${HTTPD_NAME:-"httpd"}
@@ -509,13 +509,13 @@ function clean_and_update_all(){
 #
 function usage(){
     loggy "${H1}"
-    loggy "#NAME"
+    loggy "NAME"
     loggy "  hyraxctl - hyrax control"
     loggy ""
-    loggy "#SYNOPSIS"
+    loggy "SYNOPSIS"
     loggy "  hyraxctl cmd1 [cmd2 ... cmdN]"
     loggy ""
-    loggy "#DESCRIPTION"
+    loggy "DESCRIPTION"
     loggy "  The hyraxctl utility implements a collection of commands that "
     loggy "  allow one to start, stop, and update Hyrax and Apache httpd docker"
     loggy "  images with all of the configuration and resources needed to"
