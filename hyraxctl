@@ -324,6 +324,12 @@ function set_file_permissions() {
   return 0
 }
 
+function clean_hyrax_logs(){
+    rm -rf ${HYRAX_HOME}/log/bes/*
+    rm -rf ${HYRAX_HOME}/olfs/logs/*
+    rm -rf ${HYRAX_HOME}/log/tomcat/*
+}
+
 
 ################################################################################
 # save_hyrax_logs()
@@ -425,7 +431,6 @@ function start_hyrax(){
         --publish 8443:8443 \
         --volume ${data_dir}:/usr/share/hyrax:ro \
         --volume ${bes_log_dir}:/var/log/bes \
-        --volume ${log_dir}/tomcat/console.log:/var/log/tomcat/console.log \
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
         --volume ${bes_site_conf_file}:/etc/bes/site.conf \
