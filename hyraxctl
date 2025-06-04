@@ -325,9 +325,12 @@ function set_file_permissions() {
 }
 
 function clean_hyrax_logs(){
-    rm -rf ${HYRAX_HOME}/log/bes/*
-    rm -rf ${HYRAX_HOME}/olfs/logs/*
-    rm -rf ${HYRAX_HOME}/log/tomcat/*
+    local prolog="clean_hyrax_logs() -"
+    loggy "${prolog} BEGIN"
+    loggy $(rm -vrf ${HYRAX_HOME}/log/bes/*)
+    loggy $(rm -vrf ${HYRAX_HOME}/olfs/logs/*)
+    loggy $(rm -vrf ${HYRAX_HOME}/log/tomcat/*)
+    loggy "${prolog} END"
 }
 
 
@@ -382,14 +385,10 @@ function save_hyrax_logs() {
       source_file="${HYRAX_HOME}/log/tomcat/$log"
       loggy "${prolog} Processing: $source_file"
 
-      if test -f "${source_file}"
-      then
+      if test -f "${source_file}"; then
         cp -v "${source_file}" "${target_dir}/tomcat-${log}"
-      elif test -d "${source_file}"
-      then
-        cp -rv "${source_file}" "${target_dir}/tomcat-${log}"
       else
-        loggy "$prolog Failed to locate: $source_file"
+        loggy "$prolog Failed to locate file: $source_file"
       fi
     done
     loggy "${prolog} END"
