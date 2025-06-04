@@ -259,7 +259,8 @@ function update_httpd() {
 }
 
 function get_platform(){
-    local sys_arch=$(arch)
+    local sys_arch=
+    sys_arch=$(arch)
     echo "# sys_arch: $sys_arch" >&2
     local platform=""
     if test $sys_arch = "arm64"; then platform="--platform linux/amd64"; fi
@@ -267,7 +268,8 @@ function get_platform(){
 }
 
 function set_file_permissions() {
-    echo "# set_file_permissions()" >&2
+    local prolog="set_file_permissions() -"
+    loggy "${prolog} BEGIN"
 
     local vers_doc
     vers_doc=$( which sw_vers )
@@ -277,40 +279,40 @@ function set_file_permissions() {
 
       local platform=""
       platform=$( get_platform )
-      echo "# platform: $platform" >&2
+      loggy "${prolog} platform: $platform"
 
       local use_disconnect="-d" # ${disconnect:-"-d"}
-      echo "# use_disconnect: $use_disconnect" >&2
+      loggy "${prolog} use_disconnect: $use_disconnect"
 
-      echo "# Checking bes user info in Hyrax container: ${HYRAX_IMAGE}" >&2
+      loggy "${prolog} Checking bes user info in Hyrax container: ${HYRAX_IMAGE}"
       docker run $use_disconnect $platform --name "${name}" ${HYRAX_IMAGE}
 
       sleep_time=10
-      echo "# Waiting $sleep_time seconds for hyrax to get going..."
+      loggy "${prolog} Waiting $sleep_time seconds for hyrax to get going..."
       sleep $sleep_time
 
       local bes_uid
       bes_uid=$(docker logs "${name}" 2>&1 | grep bes_uid | awk '{print $2;}')
-      echo "# bes_uid: ${bes_uid}" >&2
+      loggy "${prolog} bes_uid: ${bes_uid}"
 
       local bes_gid
       bes_gid=$(docker logs "${name}" 2>&1 | grep bes_gid | awk '{print $2;}')
-      echo "# bes_gid: ${bes_gid}" >&2
+      loggy "${prolog} bes_gid: ${bes_gid}"
 
-      echo "# Stopping Hyrax container: ${HYRAX_IMAGE}" >&2
+      loggy "${prolog} Stopping Hyrax container: ${HYRAX_IMAGE}"
       docker container rm -f "${name}"
 
       if test -n "$bes_uid" && test -n "$bes_gid"
       then
-          echo "# Setting ownership of ${bes_log_dir}" >&2
+          loggy "${prolog} Setting ownership of ${bes_log_dir}"
           sudo chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
       else
-          echo "ERROR - Failed to determine one or both of bes user uid or gid."
+          loggy "${prolog} ERROR - Failed to determine one or both of bes user uid or gid."
           return 1
       fi
   else
-    echo "# Detected OSX, no permissions were changed." >&2
-    sw_vers | awk '{print "#    "$0;}' >&2
+    loggy "${prolog} Detected OSX, no permissions were changed."
+    loggy $(sw_vers)
   fi
     return 0
 }
@@ -346,7 +348,7 @@ function save_hyrax_logs() {
 
     for log in  console.log "${local_host_log}" catalina.out
     do
-      cp -v "${HYRAX_HOME}/log/tomcat/$log" "${target_dir}/${date_tag}-tomcat-${log}"
+      cp -rv "${HYRAX_HOME}/log/tomcat/$log" "${target_dir}/${date_tag}-tomcat-${log}"
     done
 
 }
