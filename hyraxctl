@@ -337,21 +337,47 @@ function save_hyrax_logs() {
     loggy "${prolog} date_tag: $date_tag"
 
     # Save BES log
-    cp -v "${HYRAX_HOME}/log/bes/bes.log" "${target_dir}/${date_tag}-bes.log"
+    local source_file=
+    source_file="${HYRAX_HOME}/log/bes/bes.log"
+    loggy "${prolog} Processing: $source_file"
+    if test -f "${source_file}"
+    then
+      cp -v "${source_file}" "${target_dir}/${date_tag}-bes.log"
+    else
+      loggy "$prolog Failed to locate: $source_file"
+    fi
 
     # Save the various OLFS logs
     for log in HyraxAccessLog.log HyraxErrors.log cloud_watch_request.log cloud_watch_response.log BESCommands.log
     do
-      cp -v "${HYRAX_HOME}/olfs/logs/$log" "${target_dir}/${date_tag}-${log}"
+      source_file="${HYRAX_HOME}/olfs/logs/$log"
+      loggy "${prolog} Processing: $source_file"
+      if test -f "${source_file}"
+      then
+        cp -v "${source_file}" "${target_dir}/${date_tag}-${log}"
+      else
+        loggy "$prolog Failed to locate: $source_file"
+      fi
     done
 
     # Save Tomcat logs
     local local_host_log=
     local_host_log=$(basename $(ls -1t "${HYRAX_HOME}/log/tomcat/localhost".* | head -1))
-
+    loggy "${prolog} local_host_log: $local_host_log"
     for log in  console.log "${local_host_log}" catalina.out
     do
-      cp -rv "${HYRAX_HOME}/log/tomcat/$log" "${target_dir}/${date_tag}-tomcat-${log}"
+      source_file="${HYRAX_HOME}/log/tomcat/$log"
+      loggy "${prolog} Processing: $source_file"
+
+      if test -f "${source_file}"
+      then
+        cp -v "${source_file}" "${target_dir}/${date_tag}-tomcat-${log}"
+      elif test -d "${source_file}"
+      then
+        cp -rv "${source_file}" "${target_dir}/${date_tag}-tomcat-${log}"
+      else
+        loggy "$prolog Failed to locate: $source_file"
+      fi
     done
     loggy "${prolog} END"
 }
