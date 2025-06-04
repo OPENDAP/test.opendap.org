@@ -342,7 +342,7 @@ function save_hyrax_logs() {
     date_tag=$(date +"%Y-%m-%d-%H:%M:%S")
     loggy "${prolog} date_tag: $date_tag"
 
-    # Save BES log
+    loggy "${prolog} Saving BES log..."
     local source_file=
     source_file="${HYRAX_HOME}/log/bes/bes.log"
     loggy "${prolog} Processing: $source_file"
@@ -353,7 +353,7 @@ function save_hyrax_logs() {
       loggy "$prolog Failed to locate: $source_file"
     fi
 
-    # Save the various OLFS logs
+    loggy "${prolog} Save the various OLFS logs..."
     for log in HyraxAccessLog.log HyraxErrors.log cloud_watch_request.log cloud_watch_response.log BESCommands.log
     do
       source_file="${HYRAX_HOME}/olfs/logs/$log"
@@ -366,7 +366,7 @@ function save_hyrax_logs() {
       fi
     done
 
-    # Save Tomcat logs
+    loggy "${prolog} Save the Tomcat logs..."
     local local_host_log=
     local_host_log=$(basename $(ls -1t "${HYRAX_HOME}/log/tomcat/localhost".* | head -1))
     loggy "${prolog} local_host_log: $local_host_log"
@@ -412,6 +412,8 @@ function start_hyrax(){
     local platform=""
     platform=$( get_platform )
     loggy "${prolog} platform: $platform"
+
+    touch ${log_dir}/tomcat/console.log
 
     loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
     docker run $use_disconnect $platform \
