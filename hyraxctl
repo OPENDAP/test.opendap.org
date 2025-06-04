@@ -333,14 +333,15 @@ function save_hyrax_logs() {
     local prolog="save_hyrax_logs() -"
     loggy "${prolog} BEGIN"
 
-    local target_dir=${HYRAX_HOME}/crash_logs
-    loggy "${prolog} target_dir: $target_dir"
-
-    mkdir -pv "$target_dir"
 
     local date_tag=
     date_tag=$(date +"%Y-%m-%d-%H:%M:%S")
     loggy "${prolog} date_tag: $date_tag"
+
+    local target_dir="${HYRAX_HOME}/crash_logs/$date_tag"
+    loggy "${prolog} target_dir: $target_dir"
+
+    mkdir -pv "$target_dir"
 
     loggy "${prolog} Saving BES log..."
     local source_file=
@@ -348,7 +349,7 @@ function save_hyrax_logs() {
     loggy "${prolog} Processing: $source_file"
     if test -f "${source_file}"
     then
-      cp -v "${source_file}" "${target_dir}/${date_tag}-bes.log"
+      cp -v "${source_file}" "${target_dir}/bes.log"
     else
       loggy "$prolog Failed to locate: $source_file"
     fi
@@ -360,7 +361,7 @@ function save_hyrax_logs() {
       loggy "${prolog} Processing: $source_file"
       if test -f "${source_file}"
       then
-        cp -v "${source_file}" "${target_dir}/${date_tag}-${log}"
+        cp -v "${source_file}" "${target_dir}/${log}"
       else
         loggy "$prolog Failed to locate: $source_file"
       fi
@@ -377,10 +378,10 @@ function save_hyrax_logs() {
 
       if test -f "${source_file}"
       then
-        cp -v "${source_file}" "${target_dir}/${date_tag}-tomcat-${log}"
+        cp -v "${source_file}" "${target_dir}/tomcat-${log}"
       elif test -d "${source_file}"
       then
-        cp -rv "${source_file}" "${target_dir}/${date_tag}-tomcat-${log}"
+        cp -rv "${source_file}" "${target_dir}/tomcat-${log}"
       else
         loggy "$prolog Failed to locate: $source_file"
       fi
