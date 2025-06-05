@@ -449,7 +449,8 @@ function start_hyrax(){
 function stop_hyrax(){
     loggy "stop_hyrax() - BEGIN"
     # Dump Hyrax container
-    docker rm -f "${HYRAX_NAME}"
+    loggy "stop_hyrax() - Forcibly removing the container: ${HYRAX_NAME}"
+    loggy "Removed: "$( docker rm -f "${HYRAX_NAME}" )
     loggy "stop_hyrax() - END"
 }
 ################################################################################
