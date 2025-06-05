@@ -207,7 +207,6 @@ function make_network_as_needed(){
         loggy "${prolog} "
     fi
 
-
 }
 
 
@@ -404,6 +403,7 @@ function start_hyrax(){
     loggy "${prolog} BEGIN"
 
     save_hyrax_logs
+    clean_hyrax_logs
 
     set_file_permissions
     if test $? -ne 0
