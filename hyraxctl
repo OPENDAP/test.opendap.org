@@ -447,22 +447,24 @@ function start_hyrax(){
 # stop_hyrax()
 #
 function stop_hyrax(){
-    loggy "stop_hyrax() - BEGIN"
+    local prolog="stop_hyrax() -"
+    loggy "${prolog} BEGIN"
     # Dump Hyrax container
-    loggy "stop_hyrax() - Forcibly removing the container: ${HYRAX_NAME}"
-    loggy "Removed: "$( docker rm -f "${HYRAX_NAME}" )
-    loggy "stop_hyrax() - END"
+    loggy "${prolog} Forcibly removing the container: ${HYRAX_NAME}"
+    loggy "${prolog} Removed: "$( docker rm -f "${HYRAX_NAME}" )
+    loggy "${prolog} END"
 }
 ################################################################################
 #
 # update_hyrax()
 #
 function update_hyrax() {
-    loggy "update_hyrax() - BEGIN"
+    local prolog="stop_hyrax() -"
+    loggy "${prolog} BEGIN"
     docker pull "${HYRAX_IMAGE}"
     stop_hyrax
     start_hyrax
-    loggy "update_hyrax() - END"
+    loggy "${prolog} END"
 }
 
 
@@ -472,11 +474,12 @@ function update_hyrax() {
 # start_all()
 #
 function start_all(){
-    loggy "start_all() - BEGIN"
+    local prolog="start_all() -"
+    loggy "${prolog} BEGIN"
     make_network_as_needed
     start_hyrax
     start_httpd
-    loggy "start_all() - END"
+    loggy "${prolog} END"
 }
 
 
