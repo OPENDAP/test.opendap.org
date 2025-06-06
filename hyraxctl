@@ -363,7 +363,7 @@ function save_hyrax_logs() {
     fi
 
     loggy "${prolog} Save the various OLFS logs..."
-    for log in HyraxAccess.log HyraxErrors.log cloud_watch_request.log cloud_watch_response.log BESCommands.log
+    for log in olfs-log.json HyraxAccess.log HyraxErrors.log cloud_watch_request.log cloud_watch_response.log BESCommands.log
     do
       source_file="${HYRAX_HOME}/olfs/logs/$log"
       loggy "${prolog} Processing: $source_file"
