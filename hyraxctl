@@ -473,7 +473,7 @@ function enable_core_dump(){
     stop_hyrax
     start_hyrax
     docker exec -it ${HYRAX_NAME}  bash -c "mkdir -p /cores; echo '/cores/core.%e.%p' > /proc/sys/kernel/core_pattern"
-    ulimit -S -c unlimited
+    loggy `ulimit`
 }
 
 ################################################################################
