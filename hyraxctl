@@ -41,6 +41,10 @@ export THREDDS_CATALOG_ROOT=${THREDDS_CATALOG_ROOT:-""}
 
 export HYRAX_MEMORY=${HYRAX_MEMORY:-"24g"}
 
+
+export bes_cores_dir
+export tomcat_server_xml
+export run_privileged
 ################################################################################
 #
 # show_config()
@@ -68,6 +72,7 @@ function show_config() {
     loggy "${prolog}                 data_dir: ${data_dir}"
     loggy "${prolog}       bes_site_conf_file: ${bes_site_conf_file}"
     loggy "${prolog}              bes_log_dir: ${bes_log_dir}"
+    loggy "${prolog}            bes_cores_dir: ${bes_cores_dir}"
     loggy "${prolog}            olfs_conf_dir: ${olfs_conf_dir}"
     loggy "${prolog}        tomcat_server_xml: ${tomcat_server_xml}"
     loggy "${prolog} tomcat_server_xml_volume: ${tomcat_server_xml_volume}"
@@ -77,6 +82,23 @@ function show_config() {
     loggy "${prolog}                    ncwms: ${ncwms}"
     loggy "${prolog}"
 }
+################################################################################
+#
+# config_tomcat_server()
+#
+function config_tomcat_server() {
+    local hyrax_home="$1"
+    # A Tomcat server.xml file that enables AJP pn 8009
+    tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
+
+    # Creates the tomcat server.xml volume mount key pair for the Docker run command.
+    export tomcat_server_xml_volume=""
+    if test -n "${tomcat_server_xml}"; then
+        export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
+    fi
+
+}
+
 
 ################################################################################
 #
@@ -118,16 +140,9 @@ function config_test_opendap_org(){
     export bes_site_conf_file="${hyrax_home}/bes/site.conf"
 
     export bes_log_dir="${log_dir}/bes"
+    bes_cores_dir="${log_dir}/bes/cores"
 
-
-    # A Tomcat server.xml file that enables AJP pn 8009
-    export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
-
-    # Creates the tomcat server.xml volume mount key pair for the Docker run command.
-    export tomcat_server_xml_volume=""
-    if test -n "${tomcat_server_xml}"; then
-        export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
-    fi
+    config_tomcat_server "${hyrax_home}"
 
     #
     # Variables for configuring Docker launch of httpd
@@ -166,16 +181,17 @@ function config_ndp_local(){
     loggy "${prolog} BEGIN"
     loggy "${prolog} "
     prefix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
-    export hyrax_home="/Users/ndp/OPeNDAP/test.opendap.org"
+    export HYRAX_HOME="/Users/ndp/OPeNDAP/hyrax/test.opendap.org"
     export ncwms="http://localhost:8080"
-    export log_dir="${hyrax_home}/log"
+    export log_dir="${HYRAX_HOME}/log"
     export bes_log_dir="${log_dir}/bes"
+    export bes_cores_dir="${log_dir}/bes/cores"
     export data_dir="${prefix}/share/hyrax"
-    export olfs_conf_dir="${hyrax_home}/etc/olfs"
-    export bes_site_conf_file="${hyrax_home}/bes/site.conf"
-    # export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
-    # export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
-    
+    export olfs_conf_dir="${HYRAX_HOME}/etc/olfs"
+    export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
+
+    config_tomcat_server "${HYRAX_HOME}"
+
     show_config
 
     loggy "${prolog} END"
@@ -419,8 +435,10 @@ function start_hyrax(){
     platform=$( get_platform )
     loggy "${prolog} platform: $platform"
 
+    loggy "${prolog} run_privileged: $run_privileged"
+
     loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
-    docker run $use_disconnect $platform \
+    docker run $use_disconnect $run_privileged $platform \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
@@ -428,6 +446,7 @@ function start_hyrax(){
         --publish 8443:8443 \
         --volume ${data_dir}:/usr/share/hyrax:ro \
         --volume ${bes_log_dir}:/var/log/bes \
+        --volume ${bes_cores_dir}:/cores \
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
         --volume ${bes_site_conf_file}:/etc/bes/site.conf \
@@ -442,6 +461,21 @@ function start_hyrax(){
     loggy "${prolog}"
     loggy "${prolog} END"
 }
+################################################################################
+#
+# enable_core_dump()
+#
+function enable_core_dump(){
+    loggy "${H1}"
+    loggy "Enabling core dumps"
+    run_privileged="--privileged"
+    loggy "run_privileged: $run_privileged"
+    stop_hyrax
+    start_hyrax
+    docker exec -it ${HYRAX_NAME}  bash -c "mkdir -p /cores; echo '/cores/core.%e.%p' > /proc/sys/kernel/core_pattern"
+    ulimit -S -c unlimited
+}
+
 ################################################################################
 #
 # stop_hyrax()
@@ -623,6 +657,4 @@ else
     config_test_opendap_org
     usage
 fi
-
-
 
