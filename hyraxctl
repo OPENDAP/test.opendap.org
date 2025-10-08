@@ -478,24 +478,26 @@ function start_hyrax(){
 # enable_core_dump()
 #
 function enable_core_dump(){
+    local prolog="enable_core_dump() -"
     loggy "${H1}"
-    loggy "Enabling core dumps"
+    loggy "${prolog} BEGIN"
     run_privileged="--ulimit core=-1 --privileged --security-opt seccomp=unconfined "
-    loggy "run_privileged: $run_privileged"
+    loggy "${prolog} run_privileged: $run_privileged"
     stop_hyrax
     start_hyrax
 
-    loggy ""
-    loggy "Setting kernel.core.pattern in docer image:"
+    loggy "${prolog}"
+    loggy "${prolog} Setting kernel.core.pattern in docker image:"
     loggy "$(docker exec -it ${HYRAX_NAME}  bash -c "sysctl -w kernel.core_pattern=/cores/core-%e.%p.%h.%t")"
     # docker exec -it ${HYRAX_NAME}  bash -c "mkdir -p /cores; echo '/cores/core.%e.%p' > /proc/sys/kernel/core_pattern"
 
-    loggy ""
-    loggy "docker ulimit: "
+    loggy "${prolog}"
+    loggy "${prolog} docker ulimit: "
     loggy "$(docker exec -it ${HYRAX_NAME}  bash -c "ulimit -a")"
-    loggy ""
-    loggy "host ulimit:"
+    loggy "${prolog}"
+    loggy "${prolog} host ulimit:"
     loggy "$(ulimit -c=-1 -a)"
+    loggy "${prolog}"
 }
 
 ################################################################################
