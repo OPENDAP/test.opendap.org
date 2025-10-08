@@ -12,8 +12,18 @@
 ##########################################################################
 # loggy()
 #
-function loggy() {
-  echo "# $*" >&2
+#########################################################################
+# loggy()
+#
+# A handy logging function.
+#
+function loggy(){
+    if test -n "${log_file}"
+    then
+        echo  "$@"  | awk '{ print "# "$0;}' | tee -a "${log_file}" >&2
+    else
+        echo  "$@" | awk '{ print "# "$0;}'  >&2
+    fi
 }
 
 export H1="######################################################################"
@@ -45,6 +55,8 @@ export HYRAX_MEMORY=${HYRAX_MEMORY:-"24g"}
 export bes_cores_dir
 export tomcat_server_xml
 export run_privileged
+export log_file
+
 ################################################################################
 #
 # show_config()
@@ -476,8 +488,9 @@ function enable_core_dump(){
     docker exec -it ${HYRAX_NAME}  bash -c "sysctl -w kernel.core_pattern=/cores/core-%e.%p.%h.%t"
     # docker exec -it ${HYRAX_NAME}  bash -c "mkdir -p /cores; echo '/cores/core.%e.%p' > /proc/sys/kernel/core_pattern"
 
-
-    loggy `ulimit`
+    loggy "docker ulimit: $(docker exec -it ${HYRAX_NAME}  bash -c "ulimit -a")"
+    loggy ""
+    loggy "  host ulimit: "$(ulimit -a)
 }
 
 ################################################################################
