@@ -9,9 +9,6 @@
 #
 #
 
-##########################################################################
-# loggy()
-#
 #########################################################################
 # loggy()
 #
@@ -189,6 +186,8 @@ function config_test_opendap_org(){
 #
 function config_ndp_local(){
     local prolog="make_network_as_needed() -"
+    export HYRAX_HOME="/Users/ndp/OPeNDAP/hyrax/test.opendap.org"
+    local hyrax_home="$HYRAX_HOME"
     loggy "${prolog} ${H1}"
     loggy "${prolog} BEGIN"
     loggy "${prolog} "
@@ -201,6 +200,11 @@ function config_ndp_local(){
     export data_dir="${prefix}/share/hyrax"
     export olfs_conf_dir="${HYRAX_HOME}/etc/olfs"
     export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
+
+    local hyrax_home="$HYRAX_HOME"
+    export httpd_conf="${hyrax_home}/httpd/httpd.conf"
+    export htdocs_content="${hyrax_home}/httpd/htdocs"
+    export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
 
     config_tomcat_server "${HYRAX_HOME}"
 
@@ -473,6 +477,9 @@ function start_hyrax(){
     loggy "${prolog}"
     loggy "${prolog} END"
 }
+
+
+
 ################################################################################
 #
 # enable_core_dump()
@@ -488,7 +495,7 @@ function enable_core_dump(){
 
     loggy ""
     loggy "${prolog} Setting kernel.core.pattern in docker image:"
-    loggy "$(docker exec -it ${HYRAX_NAME}  bash -c "sysctl -w kernel.core_pattern=/cores/core-%e.%p.%h.%t")"
+    loggy "$(docker exec -it ${HYRAX_NAME}  bash -c "sysctl -w kernel.core_pattern=/cores/core-%e.%p.%h.%t; echo \"status: $?\""; )"
 
     loggy ""
     loggy "${prolog} docker ulimit: "
@@ -498,8 +505,59 @@ function enable_core_dump(){
     loggy "${prolog} host ulimit:"
     loggy "$(ulimit -a)"
     loggy ""
+
+    loggy ""
+    loggy "${prolog} In docker container modify /etc/systemd/system.conf to all core dumps:"
+    loggy "$(docker exec -it ${HYRAX_NAME}  bash -c "echo \"DumpCore=yes\" >> /etc/systemd/system.conf; cat /etc/systemd/system.conf; ")"
+    loggy ""
+
 }
 
+function install_debug_info(){
+
+    yum install libdap-debuginfo-3.21.1-242.el8.x86_64.rpm \
+      bes-debuginfo-3.21.1-576.static.el8.x86_64.rpm
+
+    yum debuginfo-install \
+      bzip2-libs-1.0.6-28.el8_10.x86_64 \
+      glibc-2.28-251.el8_10.25.x86_64 \
+      keyutils-libs-1.5.10-9.el8.x86_64 \
+      krb5-libs-1.18.2-32.el8_10.x86_64 \
+      libcom_err-1.45.6-6.el8_10.x86_64 \
+      libcurl-minimal-7.61.1-34.el8_10.3.x86_64 \
+      libgcc-8.5.0-28.el8_10.x86_64 \
+      libicu-60.3-2.el8_1.x86_64 \
+      libnghttp2-1.33.0-6.el8_10.1.x86_64 \
+      libselinux-2.9-10.el8_10.x86_64 \
+      libstdc++-8.5.0-28.el8_10.x86_64 \
+      libtirpc-1.1.4-12.el8_10.x86_64 \
+      libuuid-2.32.1-46.el8.x86_64 \
+      libxml2-2.9.7-21.el8_10.3.x86_64 \
+      libzstd-1.4.4-1.el8.x86_64 \
+      openssl-libs-1.1.1k-14.el8_10.x86_64 \
+      pcre2-10.32-3.el8_6.x86_64 \
+      xz-libs-5.2.4-4.el8_6.x86_64 \
+      zlib-1.2.11-26.el8.x86_64
+
+}
+################################################################################
+#
+# check_core()
+#
+function check_core() {
+    prolog="check_core() -"
+    loggy "${H1}"
+    loggy "${prolog} BEGIN"
+
+    local app="$1"
+    loggy "${prolog} Checking app: $app"
+
+    local core="$2"
+    loggy "${prolog} With core: $core"
+
+    loggy "$(docker exec -t ${HYRAX_NAME}  bash -c "gdb $app $core")"
+
+}
 ################################################################################
 #
 # stop_hyrax()
