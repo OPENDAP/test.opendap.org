@@ -315,7 +315,7 @@ function set_file_permissions() {
       local name="testy_besty"
 
       local platform=""
-      platform=$( get_platform )
+      platform="$( get_platform; )"
       loggy "${prolog} platform: $platform"
 
       local use_disconnect="-d" # ${disconnect:-"-d"}
@@ -448,7 +448,7 @@ function start_hyrax(){
     loggy "${prolog} use_disconnect: $use_disconnect"
 
     local platform=""
-    platform=$( get_platform )
+    platform="$( get_platform; )"
     loggy "${prolog} platform: $platform"
 
     loggy "${prolog} run_privileged: $run_privileged"
