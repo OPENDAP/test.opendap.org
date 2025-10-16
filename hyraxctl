@@ -513,10 +513,19 @@ function enable_core_dump(){
 
 }
 
-function install_debug_info(){
 
-    yum install libdap-debuginfo-3.21.1-242.el8.x86_64.rpm \
-      bes-debuginfo-3.21.1-576.static.el8.x86_64.rpm
+################################################################################
+# install_debug_info()
+#
+# Assumes that the debuginfo rpms for libdap4 and the bes are available in the
+# CWD of the calling shell.
+#
+function install_debug_info() {
+    local libdap4_version="$1"
+    local bes_version="$1"
+
+    yum install libdap-debuginfo-$libdap4_version.el8.x86_64.rpm \
+      bes-debuginfo-$bes_version.static.el8.x86_64.rpm
 
     yum debuginfo-install \
       bzip2-libs-1.0.6-28.el8_10.x86_64 \
@@ -538,8 +547,8 @@ function install_debug_info(){
       pcre2-10.32-3.el8_6.x86_64 \
       xz-libs-5.2.4-4.el8_6.x86_64 \
       zlib-1.2.11-26.el8.x86_64
-
 }
+
 ################################################################################
 #
 # check_core()
