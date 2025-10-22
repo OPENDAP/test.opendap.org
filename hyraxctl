@@ -224,7 +224,7 @@ function config_rocky_8_local() {
     export ncwms="http://localhost:8080"
     export log_dir="${HYRAX_HOME}/log"
     export bes_log_dir="${log_dir}/bes"
-    export bes_cores_dir="${log_dir}/bes/cores"
+    export bes_cores_dir="${bes_log_dir}/cores"
     mkdir -p "$bes_cores_dir"
     export data_dir="${prefix}/share/hyrax"
     export olfs_conf_dir="/etc/olfs"
@@ -479,7 +479,6 @@ function start_hyrax() {
         --publish 8443:8443 \
         --volume ${data_dir}:/usr/share/hyrax:ro \
         --volume ${bes_log_dir}:/var/log/bes \
-        --volume ${bes_cores_dir}:/cores \
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
         --volume ${bes_site_conf_file}:/etc/bes/site.conf \
@@ -493,6 +492,8 @@ function start_hyrax() {
     loggy "${prolog} Docker container: ${HYRAX_IMAGE} STARTED."
     loggy "${prolog}"
     loggy "${prolog} END"
+
+    #        --volume ${bes_cores_dir}:/cores \
 }
 
 ################################################################################
