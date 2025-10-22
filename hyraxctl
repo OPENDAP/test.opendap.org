@@ -285,7 +285,6 @@ function delete_network() {
 function start_httpd() {
     local prolog="start_httpd() -"
     loggy "${prolog} Starting Docker container for Apache httpd: ${HTTPD_IMAGE}"
-    mkdir -p "$bes_cores_dir"
     docker run -d \
         --name ${HTTPD_NAME} \
         --net=${HYRAX_NETWORK} \
@@ -469,6 +468,7 @@ function start_hyrax() {
     loggy "${prolog} platform: $platform"
 
     loggy "${prolog} run_privileged: $run_privileged"
+    mkdir -p "$bes_cores_dir"
 
     loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
     docker run $use_disconnect $run_privileged $platform \
