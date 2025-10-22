@@ -208,6 +208,39 @@ function config_ndp_local() {
     loggy "${prolog} END"
 
 }
+################################################################################
+#
+# config_rocky_8_local()
+#
+function config_rocky_8_local() {
+    local prolog="make_network_as_needed() -"
+    export HYRAX_HOME="/home/rocky/test.opendap.org"
+    local hyrax_home="$HYRAX_HOME"
+    loggy "${prolog} ${H1}"
+    loggy "${prolog} BEGIN"
+    loggy "${prolog} "
+    prefix=${prefix:-"/home/rocky/hyrax/build"}
+    export ncwms="http://localhost:8080"
+    export log_dir="${HYRAX_HOME}/log"
+    export bes_log_dir="${log_dir}/bes"
+    export bes_cores_dir="${log_dir}/bes/cores"
+    export data_dir="${prefix}/share/hyrax"
+    export olfs_conf_dir="/etc/olfs"
+    export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
+
+    local hyrax_home="$HYRAX_HOME"
+    export httpd_conf="${hyrax_home}/httpd/httpd.conf"
+    export htdocs_content="${hyrax_home}/httpd/htdocs"
+    export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
+
+    config_tomcat_server "${HYRAX_HOME}"
+
+    show_config
+
+    loggy "${prolog} END"
+
+}
+
 
 ################################################################################
 #
