@@ -146,7 +146,7 @@ function config_test_opendap_org() {
     export bes_site_conf_file="${hyrax_home}/bes/site.conf"
 
     export bes_log_dir="${log_dir}/bes"
-    bes_cores_dir="${log_dir}/bes/cores"
+    bes_cores_dir="${hyrax_home}/bes/cores"
 
     config_tomcat_server "${hyrax_home}"
 
@@ -188,11 +188,10 @@ function config_ndp_local() {
     loggy "${prolog} BEGIN"
     loggy "${prolog} "
     prefix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
-    export HYRAX_HOME="/Users/ndp/OPeNDAP/hyrax/test.opendap.org"
     export ncwms="http://localhost:8080"
     export log_dir="${HYRAX_HOME}/log"
     export bes_log_dir="${log_dir}/bes"
-    export bes_cores_dir="${log_dir}/bes/cores"
+    export bes_cores_dir="${hyrax_home}/bes/cores"
     export data_dir="${prefix}/share/hyrax"
     export olfs_conf_dir="${HYRAX_HOME}/etc/olfs"
     export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
@@ -224,7 +223,7 @@ function config_rocky_8_local() {
     export ncwms="http://localhost:8080"
     export log_dir="${HYRAX_HOME}/log"
     export bes_log_dir="${log_dir}/bes"
-    export bes_cores_dir="${bes_log_dir}/cores"
+    export bes_cores_dir="${hyrax_home}/bes/cores"
     export data_dir="${prefix}/share/hyrax"
     export olfs_conf_dir="/etc/olfs"
     export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
