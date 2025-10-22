@@ -566,8 +566,10 @@ function enable_core_dump() {
 # install_debug_info()
 # The server must be running and available at http://localhost:8080/opendap/ for this to worok!!
 #
-function install_debug_info() {
+function configure_hyrax_debugging() {
     local prolog="install_debug_info() -"
+
+    enable_core_dump
 
     local version_response
     version_response=$(curl http://localhost:8080/opendap/version)
