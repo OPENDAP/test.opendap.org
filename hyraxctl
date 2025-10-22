@@ -564,16 +564,25 @@ function enable_core_dump() {
 
 ################################################################################
 # install_debug_info()
-#
+# The server must be running and available at http://localhost:8080/opendap/ for this to worok!!
 #
 function install_debug_info() {
     local prolog="install_debug_info() -"
 
-    local libdap4_version="$1"
-    loggy "$prolog libdap4_version: $libdap4_version"
+    local version_response
+    version_response=$(curl http://localhost:8080/opendap/version)
+    # echo "Version Response: $version_response"
 
-    local bes_version="$2"
-    loggy "$prolog      bes_version: $bes_version"
+    local libdap4_version
+    libdap4_version=$(echo "$version_response" | grep "library name=\"libdap\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2]}')
+    echo "libdap_version: $libdap4_version"
+
+    local libdap_debug_rpm="libdap-debuginfo-$libdap4_version.el8.x86_64.rpm"
+    loggy "$prolog libdap_debug_rpm: $libdap_debug_rpm"
+
+    local bes_version
+    bes_version=$(echo "$version_response" | grep "library name=\"bes\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2]}')
+    echo "bes_version: $bes_version"
 
     local bes_debug_rpm="bes-debuginfo-$bes_version.static.el8.x86_64.rpm"
     loggy "$prolog    bes_debug_rpm: $bes_debug_rpm"
