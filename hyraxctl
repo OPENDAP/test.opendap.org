@@ -542,6 +542,9 @@ function enable_core_dump() {
     stop_hyrax
     make_network_as_needed
     start_hyrax
+    local naptime=10
+    loggy "$prolog Waiting $naptime seconds for Hyrax to arrive..."
+    sleep 10
 
     loggy ""
     loggy "${prolog} Setting kernel.core.pattern in docker image:"
@@ -629,24 +632,7 @@ function configure_hyrax_debugging() {
         zlib-1.2.11-26.el8.x86_64"
 }
 
-################################################################################
-#
-# check_core()
-#
-function check_core() {
-    prolog="check_core() -"
-    loggy "${H1}"
-    loggy "${prolog} BEGIN"
 
-    local app="$1"
-    loggy "${prolog} Checking app: $app"
-
-    local core="$2"
-    loggy "${prolog} With core: $core"
-
-    loggy "$(docker exec -t ${HYRAX_NAME} bash -c "gdb $app $core")"
-
-}
 ################################################################################
 #
 # stop_hyrax()
