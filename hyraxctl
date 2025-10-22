@@ -46,6 +46,7 @@ export HYRAX_DEPLOYMENT="http://test.opendap.org"
 export THREDDS_CATALOG_ROOT=${THREDDS_CATALOG_ROOT:-""}
 
 export HYRAX_MEMORY=${HYRAX_MEMORY:-"24g"}
+export RPM_BUILD_REPO="s3://opendap.travis.build"
 
 export bes_cores_dir
 export tomcat_server_xml
@@ -192,7 +193,6 @@ function config_ndp_local() {
     export log_dir="${HYRAX_HOME}/log"
     export bes_log_dir="${log_dir}/bes"
     export bes_cores_dir="${log_dir}/bes/cores"
-    mkdir -p "$bes_cores_dir"
     export data_dir="${prefix}/share/hyrax"
     export olfs_conf_dir="${HYRAX_HOME}/etc/olfs"
     export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
@@ -225,7 +225,6 @@ function config_rocky_8_local() {
     export log_dir="${HYRAX_HOME}/log"
     export bes_log_dir="${log_dir}/bes"
     export bes_cores_dir="${bes_log_dir}/cores"
-    mkdir -p "$bes_cores_dir"
     export data_dir="${prefix}/share/hyrax"
     export olfs_conf_dir="/etc/olfs"
     export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
@@ -442,6 +441,42 @@ function save_hyrax_logs() {
     done
     loggy "${prolog} END"
 }
+################################################################################
+#
+# start_simple()
+#
+function start_debug() {
+    local prolog="start_hyrax() -"
+    loggy "${prolog} BEGIN"
+
+    save_hyrax_logs
+    clean_hyrax_logs
+
+    set_file_permissions
+    if test $? -ne 0; then
+        loggy "${prolog} ERROR - Unable to set host file permissions. Hyrax was not started."
+        return 1
+    fi
+
+    local use_disconnect=${disconnect:-"-d"}
+    loggy "${prolog} use_disconnect: $use_disconnect"
+
+    local platform=""
+    platform="$(get_platform)"
+    loggy "${prolog} platform: $platform"
+
+    loggy "${prolog} run_privileged: $run_privileged"
+
+    loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
+    docker run -d --name "$HYRAX_NAME" -p 8080:8080 -v /usr/share/hyrax:/usr/share/hyrax \
+      -v /home/rocky/test.opendap.org/debug:/debug \
+      "$HYRAX_IMAGE"
+    loggy "${prolog}"
+    loggy "${prolog} Docker container: ${HYRAX_IMAGE} STARTED."
+    loggy "${prolog}"
+    loggy "${prolog} END"
+
+}
 
 ################################################################################
 #
@@ -468,7 +503,6 @@ function start_hyrax() {
     loggy "${prolog} platform: $platform"
 
     loggy "${prolog} run_privileged: $run_privileged"
-    mkdir -p "$bes_cores_dir"
 
     loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
     docker run $use_disconnect $run_privileged $platform \
@@ -479,6 +513,7 @@ function start_hyrax() {
         --publish 8443:8443 \
         --volume ${data_dir}:/usr/share/hyrax:ro \
         --volume ${bes_log_dir}:/var/log/bes \
+        --volume ${bes_cores_dir}:/cores \
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
         --volume ${bes_site_conf_file}:/etc/bes/site.conf \
@@ -493,7 +528,6 @@ function start_hyrax() {
     loggy "${prolog}"
     loggy "${prolog} END"
 
-    #        --volume ${bes_cores_dir}:/cores \
 }
 
 ################################################################################
@@ -532,17 +566,36 @@ function enable_core_dump() {
 ################################################################################
 # install_debug_info()
 #
-# Assumes that the debuginfo rpms for libdap4 and the bes are available in the
-# CWD of the calling shell.
 #
 function install_debug_info() {
+    local prolog="install_debug_info() -"
+
     local libdap4_version="$1"
+    loggy "$prolog libdap4_version: $libdap4_version"
+
     local bes_version="$2"
+    loggy "$prolog      bes_version: $bes_version"
 
-    yum install -y libdap-debuginfo-$libdap4_version.el8.x86_64.rpm \
-        bes-debuginfo-$bes_version.static.el8.x86_64.rpm
+    local bes_debug_rpm="bes-debuginfo-$bes_version.static.el8.x86_64.rpm"
+    loggy "$prolog    bes_debug_rpm: $bes_debug_rpm"
 
-    yum debuginfo-install -y \
+    local libdap_debug_rpm="libdap-debuginfo-$libdap4_version.el8.x86_64.rpm"
+    loggy "$prolog libdap_debug_rpm: $libdap_debug_rpm"
+
+    loggy "$prolog       Retrieving: $libdap_debug_rpm"
+    aws s3 cp "$RPM_BUILD_REPO/$libdap_debug_rpm" "$bes_cores_dir"
+
+    loggy "$prolog       Retrieving: $bes_debug_rpm"
+    aws s3 cp "$RPM_BUILD_REPO/$bes_debug_rpm"    "$bes_cores_dir"
+
+    loggy "$prolog       Installing: $libdap_debug_rpm"
+    docker exec -it hyrax bash -c "yum install -y /cores/$libdap_debug_rpm"
+
+    loggy "$prolog       Installing: $bes_debug_rpm"
+    docker exec -it hyrax bash -c "yum install -y /cores/$bes_debug_rpm"
+
+    loggy "Installing various debug info..."
+    docker exec -it hyrax bash -c "yum debuginfo-install -y \
         bzip2-libs-1.0.6-28.el8_10.x86_64 \
         glibc-2.28-251.el8_10.25.x86_64 \
         keyutils-libs-1.5.10-9.el8.x86_64 \
@@ -561,7 +614,7 @@ function install_debug_info() {
         openssl-libs-1.1.1k-14.el8_10.x86_64 \
         pcre2-10.32-3.el8_6.x86_64 \
         xz-libs-5.2.4-4.el8_6.x86_64 \
-        zlib-1.2.11-26.el8.x86_64
+        zlib-1.2.11-26.el8.x86_64"
 }
 
 ################################################################################
