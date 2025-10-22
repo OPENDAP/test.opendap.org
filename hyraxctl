@@ -540,6 +540,7 @@ function enable_core_dump() {
     run_privileged="--ulimit core=-1 --privileged --security-opt seccomp=unconfined "
     loggy "${prolog} run_privileged: $run_privileged"
     stop_hyrax
+    make_network_as_needed
     start_hyrax
 
     loggy ""
