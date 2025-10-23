@@ -657,6 +657,7 @@ function enable_debugging() {
         # loggy  "$prolog status: $status"
         return $status
     fi
+    loggy ""
 
     #-----------------------------------------------------------------
     # Enable core dumps
