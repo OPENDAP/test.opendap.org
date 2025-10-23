@@ -181,7 +181,7 @@ function config_test_opendap_org() {
 # config_ndp_local()
 #
 function config_ndp_local() {
-    local prolog="make_network_as_needed() -"
+    local prolog="config_ndp_local() -"
     export HYRAX_HOME="/Users/ndp/OPeNDAP/hyrax/test.opendap.org"
     local hyrax_home="$HYRAX_HOME"
     loggy "${prolog} ${H1}"
@@ -213,7 +213,7 @@ function config_ndp_local() {
 # config_rocky_8_local()
 #
 function config_rocky_8_local() {
-    local prolog="make_network_as_needed() -"
+    local prolog="config_rocky_8_local() -"
     export HYRAX_HOME="/home/rocky/test.opendap.org"
     local hyrax_home="$HYRAX_HOME"
     loggy "${prolog} ${H1}"
@@ -282,6 +282,9 @@ function delete_network() {
 #
 function start_httpd() {
     local prolog="start_httpd() -"
+
+    make_network_as_needed
+
     loggy "${prolog} Starting Docker container for Apache httpd: ${HTTPD_IMAGE}"
     docker run -d \
         --name ${HTTPD_NAME} \
@@ -494,6 +497,8 @@ function start_hyrax() {
         return 1
     fi
 
+    make_network_as_needed
+
     local use_disconnect=${disconnect:-"-d"}
     loggy "${prolog} use_disconnect: $use_disconnect"
 
@@ -530,8 +535,11 @@ function start_hyrax() {
 }
 
 ################################################################################
-#
 # enable_core_dump()
+#
+# Restarts the container with privileged enabled. Then it uses docker exec and
+# bash to configure the running container to create core dump files in /cores
+# on container's disk.
 #
 function enable_core_dump() {
     local prolog="enable_core_dump() -"
@@ -540,7 +548,6 @@ function enable_core_dump() {
     run_privileged="--ulimit core=-1 --privileged --security-opt seccomp=unconfined "
     loggy "${prolog} run_privileged: $run_privileged"
     stop_hyrax
-    make_network_as_needed
     start_hyrax
     local naptime=10
     loggy "$prolog Waiting $naptime seconds for Hyrax to arrive..."
@@ -566,50 +573,42 @@ function enable_core_dump() {
 
 }
 
+
 ################################################################################
-# install_debug_info()
-# The server must be running and available at http://localhost:8080/opendap/ for this to worok!!
+# test_for_aws_config()
 #
-function configure_hyrax_debugging() {
-    local prolog="install_debug_info() -"
+function test_for_aws_config() {
+    local prolog="test_for_aws_config() -"
+    local status
+    local msg
 
-    enable_core_dump
+    msg="$(aws sts get-caller-identity 2>&1 )"
+    status=$?
+    if test $status -ne 0
+    then
+        loggy "$prolog ERROR! The AWS CLI is not configured unable to use AWS CLI."
+        loggy "$prolog AWS status: $status"
+        loggy "$prolog AWS message: "$msg
+    fi
 
-    local version_response
-    version_response=$(curl http://localhost:8080/opendap/version)
-    # echo "Version Response: $version_response"
+    return $status
+}
 
-    #########################################################################
-    # Get libdap4 debug info
-    local libdap4_version
-    libdap4_version=$(echo "$version_response" | grep "library name=\"libdap\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2]}')
-    echo "libdap_version: $libdap4_version"
 
-    local libdap_debug_rpm="libdap-debuginfo-$libdap4_version.el8.x86_64.rpm"
-    loggy "$prolog libdap_debug_rpm: $libdap_debug_rpm"
+################################################################################
+# install_linux_debug_packages()
+#
+# This is probably brittle - I think I got this list from gdb when
+# I tried to look at a core dump with only the hyrax debuginfo RPMs
+# installed. Given that the version numbers are "fully qualified" I
+# suspect that when any of these packages gets updated the reference
+# below will be out of date. For the core dump inspection the binary
+# stuff has to match, or it's a debug train wreck.
+#
+function install_linux_debug_packages() {
+    local prolog="install_linux_debug_packages() -"
 
-    loggy "$prolog       Retrieving: $libdap_debug_rpm"
-    aws s3 cp "$RPM_BUILD_REPO/$libdap_debug_rpm" "$bes_cores_dir"
-
-    loggy "$prolog       Installing: $libdap_debug_rpm"
-    docker exec -it hyrax bash -c "yum install -y /cores/$libdap_debug_rpm"
-
-    #########################################################################
-    # Get BES debug info
-    local bes_version
-    bes_version=$(echo "$version_response" | grep "library name=\"bes\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2]}')
-    echo "bes_version: $bes_version"
-
-    local bes_debug_rpm="bes-debuginfo-$bes_version.static.el8.x86_64.rpm"
-    loggy "$prolog    bes_debug_rpm: $bes_debug_rpm"
-
-    loggy "$prolog       Retrieving: $bes_debug_rpm"
-    aws s3 cp "$RPM_BUILD_REPO/$bes_debug_rpm"    "$bes_cores_dir"
-
-    loggy "$prolog       Installing: $bes_debug_rpm"
-    docker exec -it hyrax bash -c "yum install -y /cores/$bes_debug_rpm"
-
-    loggy "Installing various debug info..."
+    loggy "$prolog Installing various debug info..."
     docker exec -it hyrax bash -c "yum debuginfo-install -y \
         bzip2-libs-1.0.6-28.el8_10.x86_64 \
         glibc-2.28-251.el8_10.25.x86_64 \
@@ -630,6 +629,76 @@ function configure_hyrax_debugging() {
         pcre2-10.32-3.el8_6.x86_64 \
         xz-libs-5.2.4-4.el8_6.x86_64 \
         zlib-1.2.11-26.el8.x86_64"
+}
+
+################################################################################
+# enable_debugging()
+#
+# This will call enable_core_dump() which stops and then starts the server
+# so the server should available for interrogation and configuration.
+#
+function enable_debugging() {
+    local prolog="enable_debugging() -"
+    local status
+
+    #-----------------------------------------------------------------
+  # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
+    test_for_aws_config
+    status=$?
+    if test $status -ne 0
+    then
+        loggy "$prolog ERROR! AWS CLI Not configured."
+        # loggy  "$prolog status: $status"
+        return $status
+    fi
+
+    #-----------------------------------------------------------------
+    # Enable core dumps
+    enable_core_dump
+
+    #-----------------------------------------------------------------
+    # We grab the version response from the running server
+    local version_response
+    version_response=$(curl http://localhost:8080/opendap/version)
+    # echo "Version Response: $version_response"
+
+    #-----------------------------------------------------------------
+    # Using the version response document, get and install the
+    # libdap4 debuginfo rpm
+    local libdap4_version
+    libdap4_version=$(echo "$version_response" | grep "library name=\"libdap\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2] ;}')
+    echo "libdap_version: $libdap4_version"
+
+    local libdap_debug_rpm="libdap-debuginfo-$libdap4_version.el8.x86_64.rpm"
+    loggy "$prolog libdap_debug_rpm: $libdap_debug_rpm"
+
+    loggy "$prolog       Retrieving: $libdap_debug_rpm"
+    aws s3 cp "$RPM_BUILD_REPO/$libdap_debug_rpm" "$bes_cores_dir"
+
+    loggy "$prolog       Installing: $libdap_debug_rpm"
+    docker exec -it hyrax bash -c "yum install -y /cores/$libdap_debug_rpm"
+
+    #-----------------------------------------------------------------
+    # Using the version response document, get and install the
+    # BES debuginfo rpm
+    local bes_version
+    bes_version=$(echo "$version_response" | grep "library name=\"bes\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2]; }')
+    echo "bes_version: $bes_version"
+
+    local bes_debug_rpm="bes-debuginfo-$bes_version.static.el8.x86_64.rpm"
+    loggy "$prolog    bes_debug_rpm: $bes_debug_rpm"
+
+    loggy "$prolog       Retrieving: $bes_debug_rpm"
+    aws s3 cp "$RPM_BUILD_REPO/$bes_debug_rpm"    "$bes_cores_dir"
+
+    loggy "$prolog       Installing: $bes_debug_rpm"
+    docker exec -it hyrax bash -c "yum install -y /cores/$bes_debug_rpm"
+
+    #-----------------------------------------------------------------
+    # Get the ancillary debugging symbols.
+    install_linux_debug_packages
+
+    return $status
 }
 
 
@@ -665,7 +734,6 @@ function update_hyrax() {
 function start_all() {
     local prolog="start_all() -"
     loggy "${prolog} BEGIN"
-    make_network_as_needed
     start_hyrax
     start_httpd
     loggy "${prolog} END"
@@ -776,6 +844,7 @@ function usage() {
     loggy ""
     loggy "${H3}"
 }
+
 
 function run_cmd() {
     local cmd="${1}"
