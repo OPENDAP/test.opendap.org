@@ -644,8 +644,8 @@ function enable_debugging() {
     local prolog="enable_debugging() -"
     local status
     loggy "$H1"
-    loggy ""
     loggy "$prolog BEGIN"
+    loggy ""
 
     #-----------------------------------------------------------------
     # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
