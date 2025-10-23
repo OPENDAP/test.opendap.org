@@ -214,7 +214,7 @@ function config_ndp_local() {
 #
 function config_rocky_8_local() {
     local prolog="config_rocky_8_local() -"
-    export HYRAX_HOME="/home/rocky/test.opendap.org"
+    export HYRAX_HOME="/home/rocky/docker_deploy"
     local hyrax_home="$HYRAX_HOME"
     loggy "${prolog} ${H1}"
     loggy "${prolog} BEGIN"
