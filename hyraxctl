@@ -543,7 +543,7 @@ function start_hyrax() {
 #
 function enable_core_dump() {
     local prolog="enable_core_dump() -"
-    loggy "${H1}"
+    loggy "${H2}"
     loggy "${prolog} BEGIN"
     run_privileged="--ulimit core=-1 --privileged --security-opt seccomp=unconfined "
     loggy "${prolog} run_privileged: $run_privileged"
@@ -643,10 +643,11 @@ function install_linux_debug_packages() {
 function enable_debugging() {
     local prolog="enable_debugging() -"
     local status
+    loggy "${H1}"
     loggy "$prolog BEGIN"
 
     #-----------------------------------------------------------------
-  # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
+    # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
     check_for_aws_config
     status=$?
     if test $status -ne 0
@@ -820,6 +821,11 @@ function usage() {
     loggy "                          test.opendap.org (ubuntu Docker host)"
     loggy "       config_ndp_local - Configures the shell for dev deployment"
     loggy "                          on ndp's system."
+    loggy "   config_rocky_8_local - Configures the shell for aam AWS rocky8 system"
+    loggy "                          and user rocky."
+    loggy ""
+    loggy "       enable_debugging - Launches an instance set up with debuginfo symbols"
+    loggy "                          and core dumps enabled. AWS CLI must be conifgured!"
     loggy ""
     loggy "              start_all - Makes the docker network, starts Hyrax,"
     loggy "                          starts httpd."
