@@ -643,6 +643,7 @@ function install_linux_debug_packages() {
 function enable_debugging() {
     local prolog="enable_debugging() -"
     local status
+    loggy "$prolog BEGIN"
 
     #-----------------------------------------------------------------
   # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
@@ -700,6 +701,8 @@ function enable_debugging() {
     #-----------------------------------------------------------------
     # Get the ancillary debugging symbols.
     install_linux_debug_packages
+
+    loggy "$prolog END"
 
     return $status
 }
