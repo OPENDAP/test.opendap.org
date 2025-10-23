@@ -775,6 +775,12 @@ function clean_and_update_all() {
 }
 
 ################################################################################
+# Opens an interactive bash shell on the Hyrax container.
+function dshell() {
+    docker exec -it ${HYRAX_NAME} /bin/bash
+}
+
+################################################################################
 #
 # usage()
 #
