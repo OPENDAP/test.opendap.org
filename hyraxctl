@@ -575,10 +575,10 @@ function enable_core_dump() {
 
 
 ################################################################################
-# test_for_aws_config()
+# check_for_aws_config()
 #
-function test_for_aws_config() {
-    local prolog="test_for_aws_config() -"
+function check_for_aws_config() {
+    local prolog="check_for_aws_config() -"
     local status
     local msg
 
@@ -589,6 +589,9 @@ function test_for_aws_config() {
         loggy "$prolog ERROR! The AWS CLI is not configured unable to use AWS CLI."
         loggy "$prolog AWS status: $status"
         loggy "$prolog AWS message: "$msg
+    else
+        loggy "$prolog AWS CLI is configured! user: "
+        loggy "$msg"
     fi
 
     return $status
@@ -643,7 +646,7 @@ function enable_debugging() {
 
     #-----------------------------------------------------------------
   # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
-    test_for_aws_config
+    check_for_aws_config
     status=$?
     if test $status -ne 0
     then
