@@ -643,7 +643,8 @@ function install_linux_debug_packages() {
 function enable_debugging() {
     local prolog="enable_debugging() -"
     local status
-    loggy "${H1}"
+    loggy "$H1"
+    loggy ""
     loggy "$prolog BEGIN"
 
     #-----------------------------------------------------------------
