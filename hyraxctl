@@ -9,11 +9,17 @@
 #
 #
 
-##########################################################################
+#########################################################################
 # loggy()
 #
+# A handy logging function.
+#
 function loggy() {
-  echo "# $*" >&2
+    if test -n "${log_file}"; then
+        echo "$@" | awk '{ print "# "$0;}' | tee -a "${log_file}" >&2
+    else
+        echo "$@" | awk '{ print "# "$0;}' >&2
+    fi
 }
 
 export H1="######################################################################"
@@ -40,6 +46,12 @@ export HYRAX_DEPLOYMENT="http://test.opendap.org"
 export THREDDS_CATALOG_ROOT=${THREDDS_CATALOG_ROOT:-""}
 
 export HYRAX_MEMORY=${HYRAX_MEMORY:-"24g"}
+export RPM_BUILD_REPO="s3://opendap.travis.build"
+
+export bes_cores_dir
+export tomcat_server_xml
+export run_privileged
+export log_file
 
 ################################################################################
 #
@@ -68,6 +80,7 @@ function show_config() {
     loggy "${prolog}                 data_dir: ${data_dir}"
     loggy "${prolog}       bes_site_conf_file: ${bes_site_conf_file}"
     loggy "${prolog}              bes_log_dir: ${bes_log_dir}"
+    loggy "${prolog}            bes_cores_dir: ${bes_cores_dir}"
     loggy "${prolog}            olfs_conf_dir: ${olfs_conf_dir}"
     loggy "${prolog}        tomcat_server_xml: ${tomcat_server_xml}"
     loggy "${prolog} tomcat_server_xml_volume: ${tomcat_server_xml_volume}"
@@ -77,13 +90,29 @@ function show_config() {
     loggy "${prolog}                    ncwms: ${ncwms}"
     loggy "${prolog}"
 }
+################################################################################
+#
+# config_tomcat_server()
+#
+function config_tomcat_server() {
+    local hyrax_home="$1"
+    # A Tomcat server.xml file that enables AJP pn 8009
+    tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
+
+    # Creates the tomcat server.xml volume mount key pair for the Docker run command.
+    export tomcat_server_xml_volume=""
+    if test -n "${tomcat_server_xml}"; then
+        export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
+    fi
+
+}
 
 ################################################################################
 #
 # config_test_opendap_org()
 #
 # shellcheck disable=SC2120
-function config_test_opendap_org(){
+function config_test_opendap_org() {
     local prolog="config_test_opendap_org() -"
     local hyrax_home=${1:-"${HYRAX_HOME}"}
     local data_dir_in=${2:-"${DATA_MOUNT}"}
@@ -97,49 +126,41 @@ function config_test_opendap_org(){
     export log_dir="${hyrax_home}/log"
 
     # Set up the location of the data directory for Hyrax.
-    # If one is not provided the default ${hyrax_home}/data 
+    # If one is not provided the default ${hyrax_home}/data
     # will be used.
-    if test -n "${data_dir_in}"
-    then
+    if test -n "${data_dir_in}"; then
         export data_dir="${data_dir_in}"
     else
         export data_dir="${hyrax_home}/data"
         loggy "${prolog} Using default data_dir value of: ${data_dir}"
     fi
-    
+
     # The location of the OLFS persistent configuration
     # to be injected into the Hyrax container at /etc/olfs
     #
     # **If this is used then the OLFS logs will be written
-    # to ${hyrax_home}/olfs and the log directory 
+    # to ${hyrax_home}/olfs and the log directory
     # ${hyrax_home}/log/olfs will be ignored.
     export olfs_conf_dir="${hyrax_home}/olfs"
 
     export bes_site_conf_file="${hyrax_home}/bes/site.conf"
 
     export bes_log_dir="${log_dir}/bes"
+    bes_cores_dir="${hyrax_home}/bes/cores"
 
-
-    # A Tomcat server.xml file that enables AJP pn 8009
-    export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
-
-    # Creates the tomcat server.xml volume mount key pair for the Docker run command.
-    export tomcat_server_xml_volume=""
-    if test -n "${tomcat_server_xml}"; then
-        export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
-    fi
+    config_tomcat_server "${hyrax_home}"
 
     #
     # Variables for configuring Docker launch of httpd
     #
-    
+
     # We inject a modified httpd.conf file
     export httpd_conf="${hyrax_home}/httpd/httpd.conf"
-    
-    # Our own collection of things that need to be served via http, 
+
+    # Our own collection of things that need to be served via http,
     # possibly utilizing range get capabilities
     export htdocs_content="${hyrax_home}/httpd/htdocs"
-    
+
     # Q: Is expires.sh still in use? Can we drop it?
     # A: Yes it's still in use by libdap4 tests.
     # Q: Can we drop it?
@@ -148,34 +169,72 @@ function config_test_opendap_org(){
 
     # ncWMS host name to be injected into the ncWMS configuration.
     export ncwms="${HYRAX_DEPLOYMENT}"
-        
+
     show_config
 
     loggy "${prolog} END"
 
 }
 
-
 ################################################################################
 #
 # config_ndp_local()
 #
-function config_ndp_local(){
-    local prolog="make_network_as_needed() -"
+function config_ndp_local() {
+    local prolog="config_ndp_local() -"
+    export HYRAX_HOME="/Users/ndp/OPeNDAP/hyrax/test.opendap.org"
+    local hyrax_home="$HYRAX_HOME"
     loggy "${prolog} ${H1}"
     loggy "${prolog} BEGIN"
     loggy "${prolog} "
     prefix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
-    export hyrax_home="/Users/ndp/OPeNDAP/test.opendap.org"
     export ncwms="http://localhost:8080"
-    export log_dir="${hyrax_home}/log"
+    export log_dir="${HYRAX_HOME}/log"
     export bes_log_dir="${log_dir}/bes"
+    export bes_cores_dir="${hyrax_home}/bes/cores"
     export data_dir="${prefix}/share/hyrax"
-    export olfs_conf_dir="${hyrax_home}/etc/olfs"
-    export bes_site_conf_file="${hyrax_home}/bes/site.conf"
-    # export tomcat_server_xml="${hyrax_home}/tomcat/server.xml"
-    # export tomcat_server_xml_volume="--volume ${tomcat_server_xml}:/tomcat/conf/server.xml"
-    
+    export olfs_conf_dir="${HYRAX_HOME}/etc/olfs"
+    export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
+
+    local hyrax_home="$HYRAX_HOME"
+    export httpd_conf="${hyrax_home}/httpd/httpd.conf"
+    export htdocs_content="${hyrax_home}/httpd/htdocs"
+    export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
+
+    config_tomcat_server "${HYRAX_HOME}"
+
+    show_config
+
+    loggy "${prolog} END"
+
+}
+################################################################################
+#
+# config_rocky_8_local()
+#
+function config_rocky_8_local() {
+    local prolog="config_rocky_8_local() -"
+    export HYRAX_HOME="/home/rocky/docker_deploy"
+    local hyrax_home="$HYRAX_HOME"
+    loggy "${prolog} ${H1}"
+    loggy "${prolog} BEGIN"
+    loggy "${prolog} "
+    prefix=${prefix:-"/home/rocky/hyrax/build"}
+    export ncwms="http://localhost:8080"
+    export log_dir="${HYRAX_HOME}/log"
+    export bes_log_dir="${log_dir}/bes"
+    export bes_cores_dir="${hyrax_home}/bes/cores"
+    export data_dir="${prefix}/share/hyrax"
+    export olfs_conf_dir="/etc/olfs"
+    export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
+
+    local hyrax_home="$HYRAX_HOME"
+    export httpd_conf="${hyrax_home}/httpd/httpd.conf"
+    export htdocs_content="${hyrax_home}/httpd/htdocs"
+    export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
+
+    config_tomcat_server "${HYRAX_HOME}"
+
     show_config
 
     loggy "${prolog} END"
@@ -187,17 +246,16 @@ function config_ndp_local(){
 #
 # make_network_as_needed()
 #
-function make_network_as_needed(){
+function make_network_as_needed() {
     local prolog="make_network_as_needed() -"
     #
     # Check for the network that will be shared with Apache httpd
     # If it's not found, create it.
     #
     local status=
-    docker network inspect ${HYRAX_NETWORK} > /dev/null 2>&1
+    docker network inspect ${HYRAX_NETWORK} >/dev/null 2>&1
     status=$?
-    if test $status -ne 0 ;
-    then
+    if test $status -ne 0; then
         loggy "${prolog} No Docker network by the name of ${HYRAX_NETWORK} was found. Creating..."
         docker network create hyrax-net
         loggy "${prolog} Created Docker network '${HYRAX_NETWORK}' for Hyrax and Apache httpd."
@@ -209,23 +267,24 @@ function make_network_as_needed(){
 
 }
 
-
 ################################################################################
 #
 # delete_network()
 #
-function delete_network(){
+function delete_network() {
     # Dump Hyrax Docker Network
     docker network rm ${HYRAX_NETWORK}
 }
-
 
 ################################################################################
 #
 # start_httpd()
 #
-function start_httpd(){
+function start_httpd() {
     local prolog="start_httpd() -"
+
+    make_network_as_needed
+
     loggy "${prolog} Starting Docker container for Apache httpd: ${HTTPD_IMAGE}"
     docker run -d \
         --name ${HTTPD_NAME} \
@@ -247,7 +306,7 @@ function start_httpd(){
 #
 # stop_httpd()
 #
-function stop_httpd(){
+function stop_httpd() {
     # Dump httpd container
     docker rm -f "${HTTPD_NAME}"
 }
@@ -262,7 +321,7 @@ function update_httpd() {
     start_httpd
 }
 
-function get_platform(){
+function get_platform() {
     local prolog="get_platform() -"
     local sys_arch=
     sys_arch=$(arch)
@@ -277,53 +336,51 @@ function set_file_permissions() {
     loggy "${prolog} BEGIN"
 
     local vers_doc
-    vers_doc=$( which sw_vers )
-    if test $? -ne 0
-    then
-      local name="testy_besty"
+    vers_doc=$(which sw_vers)
+    if test $? -ne 0; then
+        local name="testy_besty"
 
-      local platform=""
-      platform=$( get_platform )
-      loggy "${prolog} platform: $platform"
+        local platform=""
+        platform="$(get_platform)"
+        loggy "${prolog} platform: $platform"
 
-      local use_disconnect="-d" # ${disconnect:-"-d"}
-      loggy "${prolog} use_disconnect: $use_disconnect"
+        local use_disconnect="-d" # ${disconnect:-"-d"}
+        loggy "${prolog} use_disconnect: $use_disconnect"
 
-      loggy "${prolog} Checking bes user info in Hyrax container: ${HYRAX_IMAGE}"
-      docker run $use_disconnect $platform --name "${name}" ${HYRAX_IMAGE}
+        loggy "${prolog} Checking bes user info in Hyrax container: ${HYRAX_IMAGE}"
+        docker run $use_disconnect $platform --name "${name}" ${HYRAX_IMAGE}
 
-      sleep_time=10
-      loggy "${prolog} Waiting $sleep_time seconds for hyrax to get going..."
-      sleep $sleep_time
+        sleep_time=10
+        loggy "${prolog} Waiting $sleep_time seconds for hyrax to get going..."
+        sleep $sleep_time
 
-      local bes_uid
-      bes_uid=$(docker logs "${name}" 2>&1 | grep bes_uid | awk '{print $2;}')
-      loggy "${prolog} bes_uid: ${bes_uid}"
+        local bes_uid
+        bes_uid=$(docker logs "${name}" 2>&1 | grep bes_uid | awk '{print $2;}')
+        loggy "${prolog} bes_uid: ${bes_uid}"
 
-      local bes_gid
-      bes_gid=$(docker logs "${name}" 2>&1 | grep bes_gid | awk '{print $2;}')
-      loggy "${prolog} bes_gid: ${bes_gid}"
+        local bes_gid
+        bes_gid=$(docker logs "${name}" 2>&1 | grep bes_gid | awk '{print $2;}')
+        loggy "${prolog} bes_gid: ${bes_gid}"
 
-      loggy "${prolog} Stopping Hyrax container: ${HYRAX_IMAGE}"
-      docker container rm -f "${name}"
+        loggy "${prolog} Stopping Hyrax container: ${HYRAX_IMAGE}"
+        docker container rm -f "${name}"
 
-      if test -n "$bes_uid" && test -n "$bes_gid"
-      then
-          loggy "${prolog} Setting ownership of ${bes_log_dir}"
-          sudo chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
-      else
-          loggy "${prolog} ERROR - Failed to determine one or both of bes user uid or gid."
-          return 1
-      fi
-  else
-    loggy "${prolog} Detected OSX, no permissions were changed."
-    loggy $(sw_vers)
-  fi
-  loggy "${prolog} END"
-  return 0
+        if test -n "$bes_uid" && test -n "$bes_gid"; then
+            loggy "${prolog} Setting ownership of ${bes_log_dir}"
+            sudo chown -R ${bes_uid}:${bes_gid} "${bes_log_dir}"
+        else
+            loggy "${prolog} ERROR - Failed to determine one or both of bes user uid or gid."
+            return 1
+        fi
+    else
+        loggy "${prolog} Detected OSX, no permissions were changed."
+        loggy $(sw_vers)
+    fi
+    loggy "${prolog} END"
+    return 0
 }
 
-function clean_hyrax_logs(){
+function clean_hyrax_logs() {
     local prolog="clean_hyrax_logs() -"
     loggy "${prolog} BEGIN"
     loggy $(rm -vrf ${HYRAX_HOME}/log/bes/*)
@@ -332,7 +389,6 @@ function clean_hyrax_logs(){
     loggy "${prolog} END"
 }
 
-
 ################################################################################
 # save_hyrax_logs()
 # Saves the bes log file. The tomcat logs and OLFS logs are already being
@@ -340,7 +396,6 @@ function clean_hyrax_logs(){
 function save_hyrax_logs() {
     local prolog="save_hyrax_logs() -"
     loggy "${prolog} BEGIN"
-
 
     local date_tag=
     date_tag=$(date +"%Y-%m-%d-%H:%M:%S")
@@ -355,50 +410,44 @@ function save_hyrax_logs() {
     local source_file=
     source_file="${HYRAX_HOME}/log/bes/bes.log"
     loggy "${prolog} Processing: $source_file"
-    if test -f "${source_file}"
-    then
-      cp -v "${source_file}" "${target_dir}/bes.log"
+    if test -f "${source_file}"; then
+        cp -v "${source_file}" "${target_dir}/bes.log"
     else
-      loggy "$prolog Failed to locate: $source_file"
+        loggy "$prolog Failed to locate: $source_file"
     fi
 
     loggy "${prolog} Save the various OLFS logs..."
-    for log in olfs-log.json HyraxAccess.log HyraxErrors.log cloud_watch_request.log cloud_watch_response.log BESCommands.log
-    do
-      source_file="${HYRAX_HOME}/olfs/logs/$log"
-      loggy "${prolog} Processing: $source_file"
-      if test -f "${source_file}"
-      then
-        cp -v "${source_file}" "${target_dir}/${log}"
-      else
-        loggy "$prolog Failed to locate: $source_file"
-      fi
+    for log in olfs-log.json HyraxAccess.log HyraxErrors.log cloud_watch_request.log cloud_watch_response.log BESCommands.log; do
+        source_file="${HYRAX_HOME}/olfs/logs/$log"
+        loggy "${prolog} Processing: $source_file"
+        if test -f "${source_file}"; then
+            cp -v "${source_file}" "${target_dir}/${log}"
+        else
+            loggy "$prolog Failed to locate: $source_file"
+        fi
     done
 
     loggy "${prolog} Save the Tomcat logs..."
     local local_host_log=
     local_host_log=$(basename $(ls -1t "${HYRAX_HOME}/log/tomcat/localhost".* | head -1))
     loggy "${prolog} local_host_log: $local_host_log"
-    for log in  console.log "${local_host_log}" catalina.out
-    do
-      source_file="${HYRAX_HOME}/log/tomcat/$log"
-      loggy "${prolog} Processing: $source_file"
+    for log in console.log "${local_host_log}" catalina.out; do
+        source_file="${HYRAX_HOME}/log/tomcat/$log"
+        loggy "${prolog} Processing: $source_file"
 
-      if test -f "${source_file}"; then
-        cp -v "${source_file}" "${target_dir}/tomcat-${log}"
-      else
-        loggy "$prolog Failed to locate file: $source_file"
-      fi
+        if test -f "${source_file}"; then
+            cp -v "${source_file}" "${target_dir}/tomcat-${log}"
+        else
+            loggy "$prolog Failed to locate file: $source_file"
+        fi
     done
     loggy "${prolog} END"
 }
-
-
 ################################################################################
 #
-# start_hyrax()
+# start_simple()
 #
-function start_hyrax(){
+function start_debug() {
     local prolog="start_hyrax() -"
     loggy "${prolog} BEGIN"
 
@@ -406,21 +455,61 @@ function start_hyrax(){
     clean_hyrax_logs
 
     set_file_permissions
-    if test $? -ne 0
-    then
+    if test $? -ne 0; then
         loggy "${prolog} ERROR - Unable to set host file permissions. Hyrax was not started."
-        return 1;
+        return 1
     fi
 
     local use_disconnect=${disconnect:-"-d"}
     loggy "${prolog} use_disconnect: $use_disconnect"
 
     local platform=""
-    platform=$( get_platform )
+    platform="$(get_platform)"
     loggy "${prolog} platform: $platform"
 
+    loggy "${prolog} run_privileged: $run_privileged"
+
     loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
-    docker run $use_disconnect $platform \
+    docker run -d --name "$HYRAX_NAME" -p 8080:8080 -v /usr/share/hyrax:/usr/share/hyrax \
+      -v /home/rocky/test.opendap.org/debug:/debug \
+      "$HYRAX_IMAGE"
+    loggy "${prolog}"
+    loggy "${prolog} Docker container: ${HYRAX_IMAGE} STARTED."
+    loggy "${prolog}"
+    loggy "${prolog} END"
+
+}
+
+################################################################################
+#
+# start_hyrax()
+#
+function start_hyrax() {
+    local prolog="start_hyrax() -"
+    loggy "${prolog} BEGIN"
+
+    save_hyrax_logs
+    clean_hyrax_logs
+
+    set_file_permissions
+    if test $? -ne 0; then
+        loggy "${prolog} ERROR - Unable to set host file permissions. Hyrax was not started."
+        return 1
+    fi
+
+    make_network_as_needed
+
+    local use_disconnect=${disconnect:-"-d"}
+    loggy "${prolog} use_disconnect: $use_disconnect"
+
+    local platform=""
+    platform="$(get_platform)"
+    loggy "${prolog} platform: $platform"
+
+    loggy "${prolog} run_privileged: $run_privileged"
+
+    loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
+    docker run $use_disconnect $run_privileged $platform \
         --name ${HYRAX_NAME} \
         --net=${HYRAX_NETWORK} \
         --publish 8009:8009 \
@@ -428,6 +517,7 @@ function start_hyrax(){
         --publish 8443:8443 \
         --volume ${data_dir}:/usr/share/hyrax:ro \
         --volume ${bes_log_dir}:/var/log/bes \
+        --volume ${bes_cores_dir}:/cores \
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
         --volume ${bes_site_conf_file}:/etc/bes/site.conf \
@@ -441,17 +531,196 @@ function start_hyrax(){
     loggy "${prolog} Docker container: ${HYRAX_IMAGE} STARTED."
     loggy "${prolog}"
     loggy "${prolog} END"
+
 }
+
+################################################################################
+# enable_core_dump()
+#
+# Restarts the container with privileged enabled. Then it uses docker exec and
+# bash to configure the running container to create core dump files in /cores
+# on container's disk.
+#
+function enable_core_dump() {
+    local prolog="enable_core_dump() -"
+    loggy "${H2}"
+    loggy "${prolog} BEGIN"
+    run_privileged="--ulimit core=-1 --privileged --security-opt seccomp=unconfined "
+    loggy "${prolog} run_privileged: $run_privileged"
+    stop_hyrax
+    start_hyrax
+    local naptime=10
+    loggy "$prolog Waiting $naptime seconds for Hyrax to arrive..."
+    sleep 10
+
+    loggy ""
+    loggy "${prolog} Setting kernel.core.pattern in docker image:"
+    loggy "$(docker exec -it ${HYRAX_NAME} bash -c "sysctl -w kernel.core_pattern=/cores/core-%e.%p.%h.%t; echo \"status: $?\"")"
+
+    loggy ""
+    loggy "${prolog} docker ulimit: "
+    loggy "$(docker exec -it ${HYRAX_NAME} bash -c "ulimit -a")"
+
+    loggy ""
+    loggy "${prolog} host ulimit:"
+    loggy "$(ulimit -a)"
+    loggy ""
+
+    loggy ""
+    loggy "${prolog} In docker container modify /etc/systemd/system.conf to all core dumps:"
+    loggy "$(docker exec -it ${HYRAX_NAME} bash -c "echo \"DumpCore=yes\" >> /etc/systemd/system.conf; cat /etc/systemd/system.conf; ")"
+    loggy ""
+
+}
+
+
+################################################################################
+# check_for_aws_config()
+#
+function check_for_aws_config() {
+    local prolog="check_for_aws_config() -"
+    local status
+    local msg
+
+    msg="$(aws sts get-caller-identity 2>&1 )"
+    status=$?
+    if test $status -ne 0
+    then
+        loggy "$prolog ERROR! The AWS CLI is not configured unable to use AWS CLI."
+        loggy "$prolog AWS status: $status"
+        loggy "$prolog AWS message: "$msg
+    else
+        loggy "$prolog AWS CLI is configured! user: "
+        loggy "$msg"
+    fi
+
+    return $status
+}
+
+
+################################################################################
+# install_linux_debug_packages()
+#
+# This is probably brittle - I think I got this list from gdb when
+# I tried to look at a core dump with only the hyrax debuginfo RPMs
+# installed. Given that the version numbers are "fully qualified" I
+# suspect that when any of these packages gets updated the reference
+# below will be out of date. For the core dump inspection the binary
+# stuff has to match, or it's a debug train wreck.
+#
+function install_linux_debug_packages() {
+    local prolog="install_linux_debug_packages() -"
+
+    loggy "$prolog Installing various debug info..."
+    docker exec -it hyrax bash -c "yum debuginfo-install -y \
+        bzip2-libs-1.0.6-28.el8_10.x86_64 \
+        glibc-2.28-251.el8_10.25.x86_64 \
+        keyutils-libs-1.5.10-9.el8.x86_64 \
+        krb5-libs-1.18.2-32.el8_10.x86_64 \
+        libcom_err-1.45.6-6.el8_10.x86_64 \
+        libcurl-minimal-7.61.1-34.el8_10.3.x86_64 \
+        libgcc-8.5.0-28.el8_10.x86_64 \
+        libicu-60.3-2.el8_1.x86_64 \
+        libnghttp2-1.33.0-6.el8_10.1.x86_64 \
+        libselinux-2.9-10.el8_10.x86_64 \
+        libstdc++-8.5.0-28.el8_10.x86_64 \
+        libtirpc-1.1.4-12.el8_10.x86_64 \
+        libuuid-2.32.1-46.el8.x86_64 \
+        libxml2-2.9.7-21.el8_10.3.x86_64 \
+        libzstd-1.4.4-1.el8.x86_64 \
+        openssl-libs-1.1.1k-14.el8_10.x86_64 \
+        pcre2-10.32-3.el8_6.x86_64 \
+        xz-libs-5.2.4-4.el8_6.x86_64 \
+        zlib-1.2.11-26.el8.x86_64"
+}
+
+################################################################################
+# enable_debugging()
+#
+# This will call enable_core_dump() which stops and then starts the server
+# so the server should available for interrogation and configuration.
+#
+function enable_debugging() {
+    local prolog="enable_debugging() -"
+    local status
+    loggy "$H1"
+    loggy "$prolog BEGIN"
+    loggy ""
+
+    #-----------------------------------------------------------------
+    # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
+    check_for_aws_config
+    status=$?
+    if test $status -ne 0
+    then
+        loggy "$prolog ERROR! AWS CLI Not configured."
+        # loggy  "$prolog status: $status"
+        return $status
+    fi
+    loggy ""
+
+    #-----------------------------------------------------------------
+    # Enable core dumps
+    enable_core_dump
+
+    #-----------------------------------------------------------------
+    # We grab the version response from the running server
+    local version_response
+    version_response=$(curl http://localhost:8080/opendap/version)
+    # echo "Version Response: $version_response"
+
+    #-----------------------------------------------------------------
+    # Using the version response document, get and install the
+    # libdap4 debuginfo rpm
+    local libdap4_version
+    libdap4_version=$(echo "$version_response" | grep "library name=\"libdap\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2] ;}')
+    echo "libdap_version: $libdap4_version"
+
+    local libdap_debug_rpm="libdap-debuginfo-$libdap4_version.el8.x86_64.rpm"
+    loggy "$prolog libdap_debug_rpm: $libdap_debug_rpm"
+
+    loggy "$prolog       Retrieving: $libdap_debug_rpm"
+    aws s3 cp "$RPM_BUILD_REPO/$libdap_debug_rpm" "$bes_cores_dir"
+
+    loggy "$prolog       Installing: $libdap_debug_rpm"
+    docker exec -it hyrax bash -c "yum install -y /cores/$libdap_debug_rpm"
+
+    #-----------------------------------------------------------------
+    # Using the version response document, get and install the
+    # BES debuginfo rpm
+    local bes_version
+    bes_version=$(echo "$version_response" | grep "library name=\"bes\"" | awk '{ split($3,v,"="); gsub("\"","",v[2]); print v[2]; }')
+    echo "bes_version: $bes_version"
+
+    local bes_debug_rpm="bes-debuginfo-$bes_version.static.el8.x86_64.rpm"
+    loggy "$prolog    bes_debug_rpm: $bes_debug_rpm"
+
+    loggy "$prolog       Retrieving: $bes_debug_rpm"
+    aws s3 cp "$RPM_BUILD_REPO/$bes_debug_rpm"    "$bes_cores_dir"
+
+    loggy "$prolog       Installing: $bes_debug_rpm"
+    docker exec -it hyrax bash -c "yum install -y /cores/$bes_debug_rpm"
+
+    #-----------------------------------------------------------------
+    # Get the ancillary debugging symbols.
+    install_linux_debug_packages
+
+    loggy "$prolog END"
+
+    return $status
+}
+
+
 ################################################################################
 #
 # stop_hyrax()
 #
-function stop_hyrax(){
+function stop_hyrax() {
     local prolog="stop_hyrax() -"
     loggy "${prolog} BEGIN"
     # Dump Hyrax container
     loggy "${prolog} Forcibly removing the container: ${HYRAX_NAME}"
-    loggy "${prolog} Removed: "$( docker rm -f "${HYRAX_NAME}" )
+    loggy "${prolog} Removed: "$(docker rm -f "${HYRAX_NAME}")
     loggy "${prolog} END"
 }
 ################################################################################
@@ -467,27 +736,23 @@ function update_hyrax() {
     loggy "${prolog} END"
 }
 
-
-
 ################################################################################
 #
 # start_all()
 #
-function start_all(){
+function start_all() {
     local prolog="start_all() -"
     loggy "${prolog} BEGIN"
-    make_network_as_needed
     start_hyrax
     start_httpd
     loggy "${prolog} END"
 }
 
-
 ################################################################################
 #
 # stop_all()
 #
-function stop_all(){
+function stop_all() {
     loggy "stop_all() - BEGIN"
     # Dump all containers
     docker rm -f $(docker ps -aq)
@@ -500,7 +765,7 @@ function stop_all(){
 #
 # clean_and_update()
 #
-function clean_and_update_all(){
+function clean_and_update_all() {
     loggy "clean_and_update_all() - BEGIN"
     stop_all
     # Dump ALL the images
@@ -511,12 +776,17 @@ function clean_and_update_all(){
     loggy "clean_and_update_all() - END"
 }
 
+################################################################################
+# Opens an interactive bash shell on the Hyrax container.
+function dshell() {
+    docker exec -it ${HYRAX_NAME} /bin/bash
+}
 
 ################################################################################
 #
 # usage()
 #
-function usage(){
+function usage() {
     loggy "${H1}"
     loggy "NAME"
     loggy "  hyraxctl - hyrax control"
@@ -559,6 +829,11 @@ function usage(){
     loggy "                          test.opendap.org (ubuntu Docker host)"
     loggy "       config_ndp_local - Configures the shell for dev deployment"
     loggy "                          on ndp's system."
+    loggy "   config_rocky_8_local - Configures the shell for aam AWS rocky8 system"
+    loggy "                          and user rocky."
+    loggy ""
+    loggy "       enable_debugging - Launches an instance set up with debuginfo symbols"
+    loggy "                          and core dumps enabled. AWS CLI must be conifgured!"
     loggy ""
     loggy "              start_all - Makes the docker network, starts Hyrax,"
     loggy "                          starts httpd."
@@ -590,21 +865,34 @@ function usage(){
     loggy "${H3}"
 }
 
-function run_cmd(){
+
+function run_cmd() {
     local cmd="${1}"
 
-    if test "${cmd}" == "show_config"; then show_config;
-    elif test "${cmd}" == "config_test_opendap_org"; then config_test_opendap_org;
-    elif test "${cmd}" == "config_ndp_local"; then config_ndp_local;
-    elif test "${cmd}" == "start_all"; then start_all;
-    elif test "${cmd}" == "stop_all"; then stop_all;
-    elif test "${cmd}" == "start_hyrax"; then start_hyrax;
-    elif test "${cmd}" == "stop_hyrax"; then stop_hyrax;
-    elif test "${cmd}" == "start_httpd"; then start_httpd;
-    elif test "${cmd}" == "stop_httpd"; then stop_httpd;
-    elif test "${cmd}" == "clean_and_update"; then clean_and_update;
-    elif test "${cmd}" == "make_network_as_needed"; then make_network_as_needed;
-    elif test "${cmd}" == "delete_network"; then delete_network;
+    if test "${cmd}" == "show_config"; then
+        show_config
+    elif test "${cmd}" == "config_test_opendap_org"; then
+        config_test_opendap_org
+    elif test "${cmd}" == "config_ndp_local"; then
+        config_ndp_local
+    elif test "${cmd}" == "start_all"; then
+        start_all
+    elif test "${cmd}" == "stop_all"; then
+        stop_all
+    elif test "${cmd}" == "start_hyrax"; then
+        start_hyrax
+    elif test "${cmd}" == "stop_hyrax"; then
+        stop_hyrax
+    elif test "${cmd}" == "start_httpd"; then
+        start_httpd
+    elif test "${cmd}" == "stop_httpd"; then
+        stop_httpd
+    elif test "${cmd}" == "clean_and_update"; then
+        clean_and_update
+    elif test "${cmd}" == "make_network_as_needed"; then
+        make_network_as_needed
+    elif test "${cmd}" == "delete_network"; then
+        delete_network
     else
         echo "ERROR Unrecognized command: ${cmd}" >&2
         usage
@@ -612,10 +900,8 @@ function run_cmd(){
 }
 
 echo "ArgCount: $#" >&2
-if test "$#" -gt 0
-then
-    for a_cmd in "$@"
-    do
+if test "$#" -gt 0; then
+    for a_cmd in "$@"; do
         echo "Running command: ${a_cmd}" >&2
         run_cmd "${a_cmd}"
     done
@@ -624,5 +910,5 @@ else
     usage
 fi
 
-
-
+# libdap: 3.21.1-273
+# bes: 3.21.1-653
