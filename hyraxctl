@@ -183,25 +183,34 @@ function config_test_opendap_org() {
 function config_ndp_local() {
     local prolog="config_ndp_local() -"
     export HYRAX_HOME="/Users/ndp/OPeNDAP/hyrax/test.opendap.org"
-    local hyrax_home="$HYRAX_HOME"
+    config_ndp "$HYRAX_HOME"
+}
+
+function config_ndp(){
+
+    local hyrax_home=
+    hyrax_home="${1:-$HYRAX_HOME}"
+    loggy "hyrax_home: $hyrax_home"
+    local pfix
+    pfix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
+    export data_dir="${pfix}/share/hyrax"
+
     loggy "${prolog} ${H1}"
     loggy "${prolog} BEGIN"
     loggy "${prolog} "
     prefix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
     export ncwms="http://localhost:8080"
-    export log_dir="${HYRAX_HOME}/log"
+    export log_dir="${hyrax_home}/log"
     export bes_log_dir="${log_dir}/bes"
     export bes_cores_dir="${hyrax_home}/bes/cores"
-    export data_dir="${prefix}/share/hyrax"
-    export olfs_conf_dir="${HYRAX_HOME}/etc/olfs"
-    export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
+    export olfs_conf_dir="${hyrax_home}/etc/olfs"
+    export bes_site_conf_file="${hyrax_home}/bes/site.conf"
 
-    local hyrax_home="$HYRAX_HOME"
     export httpd_conf="${hyrax_home}/httpd/httpd.conf"
     export htdocs_content="${hyrax_home}/httpd/htdocs"
     export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
 
-    config_tomcat_server "${HYRAX_HOME}"
+    config_tomcat_server "${hyrax_home}"
 
     show_config
 
@@ -215,25 +224,36 @@ function config_ndp_local() {
 function config_rocky_8_local() {
     local prolog="config_rocky_8_local() -"
     export HYRAX_HOME="/home/rocky/docker_deploy"
-    local hyrax_home="$HYRAX_HOME"
+    config_rocky_8 $HYRAX_HOME
+}
+
+function config_rocky_8() {
+    local prolog="config_rocky_8() -"
+
     loggy "${prolog} ${H1}"
     loggy "${prolog} BEGIN"
     loggy "${prolog} "
-    prefix=${prefix:-"/home/rocky/hyrax/build"}
+
+    local hyrax_home
+    hyrax_home="${1:-$HYRAX_HOME}"
+
+    local pfix
+    pfix=${prefix:-"/home/rocky/hyrax/build"}
+    export data_dir="${prefix}/share/hyrax"
+
+
     export ncwms="http://localhost:8080"
-    export log_dir="${HYRAX_HOME}/log"
+    export log_dir="${hyrax_home}/log"
     export bes_log_dir="${log_dir}/bes"
     export bes_cores_dir="${hyrax_home}/bes/cores"
-    export data_dir="${prefix}/share/hyrax"
     export olfs_conf_dir="/etc/olfs"
-    export bes_site_conf_file="${HYRAX_HOME}/bes/site.conf"
+    export bes_site_conf_file="${hyrax_home}/bes/site.conf"
 
-    local hyrax_home="$HYRAX_HOME"
     export httpd_conf="${hyrax_home}/httpd/httpd.conf"
     export htdocs_content="${hyrax_home}/httpd/htdocs"
     export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
 
-    config_tomcat_server "${HYRAX_HOME}"
+    config_tomcat_server "${hyrax_home}"
 
     show_config
 
@@ -666,8 +686,16 @@ function enable_debugging() {
     #-----------------------------------------------------------------
     # We grab the version response from the running server
     local version_response
-    version_response=$(curl http://localhost:8080/opendap/version)
-    # echo "Version Response: $version_response"
+    local version_url="http://localhost:8080/opendap/version"
+    locl version_file="./hyrax-version.xml"
+    http_code=$(curl -o "%{http_code}" -o "$version_file" "$version_url")
+    if test $http_code -ne 200
+    then
+        loggy  "ERROR! Failed to get Hyrax version response from: $version_url"
+        loggy  "ERROR! Failed to get Hyrax version response from: $version_url"
+    else
+        loggy  "Hyrax Version Response: $version_response"
+    fi
 
     #-----------------------------------------------------------------
     # Using the version response document, get and install the
