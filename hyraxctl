@@ -756,7 +756,7 @@ function stop_hyrax() {
 # update_hyrax()
 #
 function update_hyrax() {
-    local prolog="stop_hyrax() -"
+    local prolog="update_hyrax() -"
     loggy "${prolog} BEGIN"
     docker pull "${HYRAX_IMAGE}"
     stop_hyrax
