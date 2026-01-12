@@ -145,6 +145,9 @@ function config_test_opendap_org() {
 
     export bes_site_conf_file="${hyrax_home}/bes/site.conf"
 
+    # Credentials for service-chain
+    export bes_creds_conf_file="${hyrax_home}/bes/creds.conf"
+
     export bes_log_dir="${log_dir}/bes"
     bes_cores_dir="${hyrax_home}/bes/cores"
 
@@ -205,6 +208,9 @@ function config_ndp(){
     export bes_cores_dir="${hyrax_home}/bes/cores"
     export olfs_conf_dir="${hyrax_home}/etc/olfs"
     export bes_site_conf_file="${hyrax_home}/bes/site.conf"
+
+    # Credentials for service-chain
+    export bes_creds_conf_file="${hyrax_home}/bes/creds.conf"
 
     export httpd_conf="${hyrax_home}/httpd/httpd.conf"
     export htdocs_content="${hyrax_home}/httpd/htdocs"
@@ -541,6 +547,7 @@ function start_hyrax() {
         --volume ${log_dir}/tomcat:/usr/share/tomcat/logs \
         --volume ${olfs_conf_dir}:/etc/olfs \
         --volume ${bes_site_conf_file}:/etc/bes/site.conf \
+        --volume ${bes_creds_conf_file}:/etc/bes/credentials.conf \
         --memory=${HYRAX_MEMORY} \
         ${tomcat_server_xml_volume} \
         "${HYRAX_IMAGE}" \
