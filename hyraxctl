@@ -79,6 +79,7 @@ function show_config() {
     loggy "${prolog}                  log_dir: ${log_dir}"
     loggy "${prolog}                 data_dir: ${data_dir}"
     loggy "${prolog}       bes_site_conf_file: ${bes_site_conf_file}"
+    loggy "${prolog}      bes_creds_conf_file: ${bes_creds_conf_file}"
     loggy "${prolog}              bes_log_dir: ${bes_log_dir}"
     loggy "${prolog}            bes_cores_dir: ${bes_cores_dir}"
     loggy "${prolog}            olfs_conf_dir: ${olfs_conf_dir}"
