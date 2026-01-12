@@ -905,6 +905,7 @@ function usage() {
     then
         loggy ""
         loggy "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        loggy "WARNING: Your current user-id is: '$USER'"
         loggy "WARNING: You must be the root user in order to use the functions in this script."
         loggy "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         loggy ""
