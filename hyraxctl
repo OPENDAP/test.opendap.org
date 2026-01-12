@@ -9,6 +9,8 @@
 #
 #
 
+
+
 #########################################################################
 # loggy()
 #
@@ -25,6 +27,7 @@ function loggy() {
 export H1="######################################################################"
 export H2="- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 export H3="-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -"
+
 
 export HYRAX_NAME=${HYRAX_NAME:-"hyrax"}
 export HTTPD_NAME=${HTTPD_NAME:-"httpd"}
@@ -898,6 +901,14 @@ function usage() {
     loggy "         delete_network - Deletes the docker network for Hyrax"
     loggy "                          and httpd."
     loggy ""
+    if test "$USER" != "root"
+    then
+        loggy ""
+        loggy "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        loggy "WARNING: You must be the root user in order to use the functions in this script."
+        loggy "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        loggy ""
+    fi
     loggy "${H3}"
 }
 
