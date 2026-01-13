@@ -43,7 +43,7 @@ export HTTPD_IMAGE_DEFAULT="httpd:2.4.56-bullseye"
 export HTTPD_IMAGE=${HTTPD_IMAGE:-"$HTTPD_IMAGE_DEFAULT"}
 
 export APACHE_HTTPD_HOME=${APACHE_HTTPD_HOME:-"/usr/local/apache2"}
-export HYRAX_NETWORK=${HYRAX_NETWORK:-"hyrax-net"}
+export HYRAX_NETWORK="${HYRAX_NETWORK:-"hyrax-net"}"
 export HYRAX_DEPLOYMENT="http://test.opendap.org"
 
 export THREDDS_CATALOG_ROOT=${THREDDS_CATALOG_ROOT:-""}
@@ -283,11 +283,11 @@ function make_network_as_needed() {
     # If it's not found, create it.
     #
     local status=
-    docker network inspect ${HYRAX_NETWORK} >/dev/null 2>&1
+    docker network inspect "${HYRAX_NETWORK}" >/dev/null 2>&1
     status=$?
     if test $status -ne 0; then
         loggy "${prolog} No Docker network by the name of ${HYRAX_NETWORK} was found. Creating..."
-        docker network create hyrax-net
+        docker network create "${HYRAX_NETWORK}"
         loggy "${prolog} Created Docker network '${HYRAX_NETWORK}' for Hyrax and Apache httpd."
         loggy "${prolog} "
     else
@@ -303,7 +303,7 @@ function make_network_as_needed() {
 #
 function delete_network() {
     # Dump Hyrax Docker Network
-    docker network rm ${HYRAX_NETWORK}
+    docker network rm "${HYRAX_NETWORK}"
 }
 
 ################################################################################
@@ -351,6 +351,10 @@ function update_httpd() {
     start_httpd
 }
 
+################################################################################
+#
+# get_platform()
+#
 function get_platform() {
     local prolog="get_platform() -"
     local sys_arch=
@@ -361,6 +365,10 @@ function get_platform() {
     echo "$platform"
 }
 
+################################################################################
+#
+# set_file_permissions()
+#
 function set_file_permissions() {
     local prolog="set_file_permissions() -"
     loggy "${prolog} BEGIN"
@@ -410,6 +418,10 @@ function set_file_permissions() {
     return 0
 }
 
+################################################################################
+#
+# clean_hyrax_logs()
+#
 function clean_hyrax_logs() {
     local prolog="clean_hyrax_logs() -"
     loggy "${prolog} BEGIN"
