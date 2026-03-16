@@ -9,8 +9,6 @@
 #
 #
 
-
-
 #########################################################################
 # loggy()
 #
@@ -27,7 +25,6 @@ function loggy() {
 export H1="######################################################################"
 export H2="- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 export H3="-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -"
-
 
 export HYRAX_NAME=${HYRAX_NAME:-"hyrax"}
 export HTTPD_NAME=${HTTPD_NAME:-"httpd"}
@@ -55,6 +52,60 @@ export bes_cores_dir
 export tomcat_server_xml
 export run_privileged
 export log_file
+
+# DockerHub Tag Record 01/28/25
+#     {
+#      "creator": 13215106,
+#      "id": 1060286216,
+#      "images": [
+#        {
+#          "architecture": "amd64",
+#          "features": "",
+#          "variant": null,
+#          "digest": "sha256:d4145a8e5a1465f30ce46a3a26104d8f5580b6aa9a8e9beb207c596b6af9f5af",
+#          "os": "linux",
+#          "os_features": "",
+#          "os_version": null,
+#          "size": 1283353276,
+#          "status": "active",
+#          "last_pulled": "2026-01-28T18:29:29.35703527Z",
+#          "last_pushed": "2026-01-28T17:55:14.14516051Z"
+#        }
+#      ],
+#      "last_updated": "2026-01-28T17:55:17.788855Z",
+#      "last_updater": 13215106,
+#      "last_updater_username": "travis4opendap",
+#      "name": "ngap-1.17.1-665-test-deploy",
+#      "repository": 1748063,
+#      "full_size": 1283353276,
+#      "v2": true,
+#      "tag_status": "active",
+#      "tag_last_pulled": "2026-01-28T18:29:29.35703527Z",
+#      "tag_last_pushed": "2026-01-28T17:55:17.788855Z",
+#      "media_type": "application/vnd.docker.container.image.v1+json",
+#      "content_type": "image",
+#      "digest": "sha256:d4145a8e5a1465f30ce46a3a26104d8f5580b6aa9a8e9beb207c596b6af9f5af"
+#    },
+#
+function get_recent_docker_image_tag_names() {
+    local prolog="get_recent_docker_image_tag_names() -"
+    loggy "$prolog BEGIN"
+    local dockerhub_ns="${1:-"opendap"}"
+    loggy "$prolog     dockerhub_ns: $dockerhub_ns"
+    local dockerhub_repo="${2:-"hyrax"}"
+    loggy "$prolog   dockerhub_repo: $dockerhub_repo"
+
+    local recent_tag_entries
+    recent_tag_names="$(curl -s "https://hub.docker.com/v2/namespaces/$dockerhub_ns/repositories/$dockerhub_repo/tags" | jq -r '.results[].name')"
+
+    loggy "$prolog recent_tag_names: "
+    loggy "$recent_tag_names"
+
+    local most_recent_tag_name
+    most_recent_tag_name="$(echo "$recent_tag_names" | head -n 1)"
+    loggy echo "$prolog most_recent_tag_name: $most_recent_tag_name"
+    loggy "$prolog END"
+}
 
 ################################################################################
 #
@@ -193,7 +244,7 @@ function config_ndp_local() {
     config_ndp "$HYRAX_HOME"
 }
 
-function config_ndp(){
+function config_ndp() {
 
     local hyrax_home=
     hyrax_home="${1:-$HYRAX_HOME}"
@@ -251,7 +302,6 @@ function config_rocky_8() {
     pfix=${prefix:-"/home/rocky/hyrax/build"}
     export data_dir="${prefix}/share/hyrax"
 
-
     export ncwms="http://localhost:8080"
     export log_dir="${hyrax_home}/log"
     export bes_log_dir="${log_dir}/bes"
@@ -270,7 +320,6 @@ function config_rocky_8() {
     loggy "${prolog} END"
 
 }
-
 
 ################################################################################
 #
@@ -513,8 +562,8 @@ function start_debug() {
 
     loggy "${prolog} Starting Hyrax container: ${HYRAX_IMAGE}"
     docker run -d --name "$HYRAX_NAME" -p 8080:8080 -v /usr/share/hyrax:/usr/share/hyrax \
-      -v /home/rocky/test.opendap.org/debug:/debug \
-      "$HYRAX_IMAGE"
+        -v /home/rocky/test.opendap.org/debug:/debug \
+        "$HYRAX_IMAGE"
     loggy "${prolog}"
     loggy "${prolog} Docker container: ${HYRAX_IMAGE} STARTED."
     loggy "${prolog}"
@@ -616,7 +665,6 @@ function enable_core_dump() {
 
 }
 
-
 ################################################################################
 # check_for_aws_config()
 #
@@ -625,10 +673,9 @@ function check_for_aws_config() {
     local status
     local msg
 
-    msg="$(aws sts get-caller-identity 2>&1 )"
+    msg="$(aws sts get-caller-identity 2>&1)"
     status=$?
-    if test $status -ne 0
-    then
+    if test $status -ne 0; then
         loggy "$prolog ERROR! The AWS CLI is not configured unable to use AWS CLI."
         loggy "$prolog AWS status: $status"
         loggy "$prolog AWS message: "$msg
@@ -639,7 +686,6 @@ function check_for_aws_config() {
 
     return $status
 }
-
 
 ################################################################################
 # install_linux_debug_packages()
@@ -694,8 +740,7 @@ function enable_debugging() {
     # Make sure we have AWS CLI so we can get rpm files from our s3 bucket
     check_for_aws_config
     status=$?
-    if test $status -ne 0
-    then
+    if test $status -ne 0; then
         loggy "$prolog ERROR! AWS CLI Not configured."
         # loggy  "$prolog status: $status"
         return $status
@@ -712,12 +757,11 @@ function enable_debugging() {
     local version_url="http://localhost:8080/opendap/version"
     locl version_file="./hyrax-version.xml"
     http_code=$(curl -o "%{http_code}" -o "$version_file" "$version_url")
-    if test $http_code -ne 200
-    then
-        loggy  "ERROR! Failed to get Hyrax version response from: $version_url"
-        loggy  "ERROR! Failed to get Hyrax version response from: $version_url"
+    if test $http_code -ne 200; then
+        loggy "ERROR! Failed to get Hyrax version response from: $version_url"
+        loggy "ERROR! Failed to get Hyrax version response from: $version_url"
     else
-        loggy  "Hyrax Version Response: $version_response"
+        loggy "Hyrax Version Response: $version_response"
     fi
 
     #-----------------------------------------------------------------
@@ -747,7 +791,7 @@ function enable_debugging() {
     loggy "$prolog    bes_debug_rpm: $bes_debug_rpm"
 
     loggy "$prolog       Retrieving: $bes_debug_rpm"
-    aws s3 cp "$RPM_BUILD_REPO/$bes_debug_rpm"    "$bes_cores_dir"
+    aws s3 cp "$RPM_BUILD_REPO/$bes_debug_rpm" "$bes_cores_dir"
 
     loggy "$prolog       Installing: $bes_debug_rpm"
     docker exec -it hyrax bash -c "yum install -y /cores/$bes_debug_rpm"
@@ -760,7 +804,6 @@ function enable_debugging() {
 
     return $status
 }
-
 
 ################################################################################
 #
@@ -913,8 +956,7 @@ function usage() {
     loggy "         delete_network - Deletes the docker network for Hyrax"
     loggy "                          and httpd."
     loggy ""
-    if test "$USER" != "root"
-    then
+    if test "$USER" != "root"; then
         loggy ""
         loggy "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         loggy "WARNING: Your current user-id is: '$USER'"
@@ -924,7 +966,6 @@ function usage() {
     fi
     loggy "${H3}"
 }
-
 
 function run_cmd() {
     local cmd="${1}"
