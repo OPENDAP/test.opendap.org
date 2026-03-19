@@ -30,7 +30,7 @@ export HYRAX_NAME=${HYRAX_NAME:-"hyrax"}
 export HTTPD_NAME=${HTTPD_NAME:-"httpd"}
 export HYRAX_HOME=${HYRAX_HOME:-"/home/ubuntu/hyrax"}
 export DATA_MOUNT=${DATA_MOUNT:-"/usr/share/hyrax"}
-export HYRAX_IMAGE=${HYRAX_IMAGE:-"opendap/hyrax:snapshot"}
+export HYRAX_IMAGE=${HYRAX_IMAGE:-"opendap/hyrax:snapshot-el8"}
 
 export HTTPD_IMAGE_DEFAULT="httpd:latest"
 
@@ -245,7 +245,7 @@ function config_ndp_local() {
 }
 
 function config_ndp() {
-
+    local prolog="config_ndp() -"
     local hyrax_home=
     hyrax_home="${1:-$HYRAX_HOME}"
     loggy "hyrax_home: $hyrax_home"
@@ -253,25 +253,25 @@ function config_ndp() {
     pfix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
     export data_dir="${pfix}/share/hyrax"
 
-    loggy "${prolog} ${H1}"
-    loggy "${prolog} BEGIN"
-    loggy "${prolog} "
+    loggy "$prolog $H1"
+    loggy "$prolog BEGIN"
+    loggy "$prolog "
     prefix=${prefix:-"/Users/ndp/OPeNDAP/hyrax/build"}
     export ncwms="http://localhost:8080"
-    export log_dir="${hyrax_home}/log"
-    export bes_log_dir="${log_dir}/bes"
-    export bes_cores_dir="${hyrax_home}/bes/cores"
-    export olfs_conf_dir="${hyrax_home}/etc/olfs"
-    export bes_site_conf_file="${hyrax_home}/bes/site.conf"
+    export log_dir="$hyrax_home/log"
+    export bes_log_dir="$log_dir/bes"
+    export bes_cores_dir="$hyrax_home/bes/cores"
+    export olfs_conf_dir="$hyrax_home/etc/olfs"
+    export bes_site_conf_file="$hyrax_home/bes/site.conf"
 
     # Credentials for service-chain
-    export bes_creds_conf_file="${hyrax_home}/bes/creds.conf"
+    export bes_creds_conf_file="$hyrax_home/bes/creds.conf"
 
-    export httpd_conf="${hyrax_home}/httpd/httpd.conf"
-    export htdocs_content="${hyrax_home}/httpd/htdocs"
-    export expires_sh="${hyrax_home}/httpd/cgi-bin/expires.sh"
+    export httpd_conf="$hyrax_home/httpd/httpd.conf"
+    export htdocs_content="$hyrax_home/httpd/htdocs"
+    export expires_sh="$hyrax_home/httpd/cgi-bin/expires.sh"
 
-    config_tomcat_server "${hyrax_home}"
+    config_tomcat_server "$hyrax_home"
 
     show_config
 
@@ -461,7 +461,7 @@ function set_file_permissions() {
         fi
     else
         loggy "${prolog} Detected OSX, no permissions were changed."
-        loggy $(sw_vers)
+        loggy "$(sw_vers)"
     fi
     loggy "${prolog} END"
     return 0
@@ -473,11 +473,11 @@ function set_file_permissions() {
 #
 function clean_hyrax_logs() {
     local prolog="clean_hyrax_logs() -"
-    loggy "${prolog} BEGIN"
-    loggy $(rm -vrf ${HYRAX_HOME}/log/bes/*)
-    loggy $(rm -vrf ${HYRAX_HOME}/olfs/logs/*)
-    loggy $(rm -vrf ${HYRAX_HOME}/log/tomcat/*)
-    loggy "${prolog} END"
+    loggy "$prolog BEGIN"
+    loggy "$(rm -vrf ${HYRAX_HOME}/log/bes/*)"
+    loggy "$(rm -vrf ${HYRAX_HOME}/olfs/logs/*)"
+    loggy "$(rm -vrf ${HYRAX_HOME}/log/tomcat/*)"
+    loggy "$prolog END"
 }
 
 ################################################################################
@@ -520,7 +520,7 @@ function save_hyrax_logs() {
 
     loggy "${prolog} Save the Tomcat logs..."
     local local_host_log=
-    local_host_log=$(basename $(ls -1t "${HYRAX_HOME}/log/tomcat/localhost".* | head -1))
+    local_host_log="$(basename "$(ls -1t "$HYRAX_HOME/log/tomcat/localhost".* | head -1)")"
     loggy "${prolog} local_host_log: $local_host_log"
     for log in console.log "${local_host_log}" catalina.out; do
         source_file="${HYRAX_HOME}/log/tomcat/$log"
@@ -755,10 +755,9 @@ function enable_debugging() {
     # We grab the version response from the running server
     local version_response
     local version_url="http://localhost:8080/opendap/version"
-    locl version_file="./hyrax-version.xml"
+    local version_file="./hyrax-version.xml"
     http_code=$(curl -o "%{http_code}" -o "$version_file" "$version_url")
     if test $http_code -ne 200; then
-        loggy "ERROR! Failed to get Hyrax version response from: $version_url"
         loggy "ERROR! Failed to get Hyrax version response from: $version_url"
     else
         loggy "Hyrax Version Response: $version_response"
@@ -814,7 +813,7 @@ function stop_hyrax() {
     loggy "${prolog} BEGIN"
     # Dump Hyrax container
     loggy "${prolog} Forcibly removing the container: ${HYRAX_NAME}"
-    loggy "${prolog} Removed: "$(docker rm -f "${HYRAX_NAME}")
+    loggy "${prolog} Removed: $(docker rm -f "${HYRAX_NAME}")"
     loggy "${prolog} END"
 }
 ################################################################################
