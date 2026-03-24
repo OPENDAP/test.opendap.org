@@ -677,7 +677,7 @@ function check_for_aws_config() {
     status=$?
     if test $status -ne 0; then
         loggy "$prolog ERROR! The AWS CLI is not configured unable to use AWS CLI."
-        loggy "$prolog AWS status: $status"
+        loggy "$prolog  AWS status: $status"
         loggy "$prolog AWS message: "$msg
     else
         loggy "$prolog AWS CLI is configured! user: "

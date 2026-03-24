@@ -1,2 +1,4 @@
 .idea
 test.opendap.org.iml
+crash_logs
+crash_logs/*
