@@ -375,7 +375,7 @@ function start_httpd() {
         --net="$HYRAX_NETWORK" \
         --publish 80:80 \
         --publish 443:443 \
-        --volume" $httpd_conf":"$APACHE_HTTPD_HOME/conf/httpd.conf" \
+        --volume "$httpd_conf":"$APACHE_HTTPD_HOME/conf/httpd.conf" \
         --volume "$htdocs_content":"$APACHE_HTTPD_HOME/htdocs" \
         --volume "$expires_sh":"$APACHE_HTTPD_HOME/cgi-bin/expires.sh" \
         "$HTTPD_IMAGE"
