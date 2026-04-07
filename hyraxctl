@@ -892,6 +892,14 @@ function dshell() {
 }
 
 ################################################################################
+# Passes all the parameters to a bash shell in the HYRAX_NAME container.
+function dsh() {
+    loggy "Logging into: $HYRAX_NAME"
+    loggy ""
+    docker exec -it "$HYRAX_NAME" /bin/bash -c "$@"
+}
+
+################################################################################
 #
 # usage()
 #
