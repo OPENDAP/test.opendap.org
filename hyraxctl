@@ -57,6 +57,7 @@ export log_file
 #
 # get_recent_docker_image_tag_names()
 #
+# Here is a docker hub response for a tg name.
 # DockerHub Tag Record 01/28/25
 #     {
 #      "creator": 13215106,
@@ -101,7 +102,7 @@ function get_recent_docker_image_tag_names() {
     local dockerhub_repo="${2:-"hyrax"}"
     loggy "$prolog   dockerhub_repo: $dockerhub_repo"
 
-    local recent_tag_entries
+    local recent_tag_names
     recent_tag_names="$(curl -s "https://hub.docker.com/v2/namespaces/$dockerhub_ns/repositories/$dockerhub_repo/tags" | jq -r '.results[].name')"
 
     loggy "$prolog recent_tag_names: "
@@ -120,8 +121,9 @@ function get_recent_docker_image_tag_names() {
 function show_config() {
     local prolog="show_config() -"
     loggy "$prolog $H2"
+    loggy "$prolog Configuration Statement"
     loggy "$prolog "
-    loggy "$prolog   PRIMARY: "
+    loggy "$prolog-- Primary Values: "
     loggy "$prolog"
     loggy "$prolog             HYRAX_NAME: $HYRAX_NAME"
     loggy "$prolog             HTTPD_NAME: $HTTPD_NAME"
@@ -134,7 +136,7 @@ function show_config() {
     loggy "$prolog       HYRAX_DEPLOYMENT: $HYRAX_DEPLOYMENT"
     loggy "$prolog           HYRAX_MEMORY: $HYRAX_MEMORY"
     loggy "$prolog"
-    loggy "$prolog  DERIVED: "
+    loggy "$prolog-- Values derived from primary values: "
     loggy "$prolog"
     loggy "$prolog                  log_dir: $log_dir"
     loggy "$prolog                 data_dir: $data_dir"
@@ -150,6 +152,7 @@ function show_config() {
     loggy "$prolog               expires_sh: $expires_sh"
     loggy "$prolog                    ncwms: $ncwms"
     loggy "$prolog"
+    loggy "$prolog $H2"
 }
 ################################################################################
 #
@@ -904,88 +907,99 @@ function dsh() {
 # usage()
 #
 function usage() {
-    loggy "$H1"
-    loggy "NAME"
-    loggy "  hyraxctl - hyrax control"
-    loggy ""
-    loggy "SYNOPSIS"
-    loggy "  hyraxctl cmd1 [cmd2 ... cmdN]"
-    loggy ""
-    loggy "DESCRIPTION"
-    loggy "  The hyraxctl utility implements a collection of commands that "
-    loggy "  allow one to start, stop, and update Hyrax and Apache httpd docker"
-    loggy "  images with all of the configuration and resources needed to"
-    loggy "  operate test.opendap.org."
-    loggy "  The commands can be invoked by using one or more in the hyraxctl"
-    loggy "  commandline line invocation:"
-    loggy "  "
-    loggy "      ./hyraxctl show_config"
-    loggy "  "
-    loggy "  Or, for two or more commands:"
-    loggy "  "
-    loggy "      ./hyraxctl config_test_opendap_org start_all"
-    loggy "  "
-    loggy "  Primary configuration values can be exported in the parent shell"
-    loggy "  in order to inject different. Additionally, the file can be"
-    loggy "  sourced:"
 
-    loggy "      source ./hyraxctl"
-    loggy "      . ./hyraxctl"
-    loggy "  "
-    loggy "  After which all of the commands will be directly available in the current"
-    loggy "  shell:"
-    loggy "      # . ./hyraxctl"
-    loggy "      # show_config"
-    loggy "      # start_all"
-    loggy "      # stop_all"
-    loggy ""
-    loggy "   The available commands follow:"
-    loggy ""
-    loggy "            show_config - Sends the configuration state to stderr."
-    loggy "config_test_opendap_org - Configures the shell for deployment on"
-    loggy "                          test.opendap.org (ubuntu Docker host)"
-    loggy "       config_ndp_local - Configures the shell for dev deployment"
-    loggy "                          on ndp's system."
-    loggy "   config_rocky_8_local - Configures the shell for aam AWS rocky8 system"
-    loggy "                          and user rocky."
-    loggy ""
-    loggy "       enable_debugging - Launches an instance set up with debuginfo symbols"
-    loggy "                          and core dumps enabled. AWS CLI must be conifgured!"
-    loggy ""
-    loggy "              start_all - Makes the docker network, starts Hyrax,"
-    loggy "                          starts httpd."
-    loggy "               stop_all - Stops and deletes all containers, deletes"
-    loggy "                          docker network."
-    loggy "            start_hyrax - Starts Hyrax in the docker engine using"
-    loggy "                          configuration values in the env."
-    loggy "             stop_hyrax - Deletes the running (or not) hyrax "
-    loggy "                          container from the docker engine."
-    loggy "           update_hyrax - Pulls the latest HYRAX_IMAGE tag (currently: "
-    loggy "                          $HYRAX_IMAGE), stops the Hyrax container,"
-    loggy "                          and then starts the (possibly updated) image."
-    loggy "            start_httpd - Starts httpd in the docker engine using"
-    loggy "                          configuration values in the env."
-    loggy "             stop_httpd - Deletes the running (or not) httpd "
-    loggy "                          container from the docker engine."
-    loggy "           update_httpd - Pulls the latest HYRAX_IMAGE tag (currently: "
-    loggy "                          $HTTPD_IMAGE), stops the Hyrax container,"
-    loggy "                          and then starts the (possibly updated) image."
-    loggy "   clean_and_update_all - Stops and deletes all containers, deletes"
-    loggy "                          docker network, deletes all images, pulls"
-    loggy "                          Hyrax and httpd by tag"
-    loggy ""
-    loggy " make_network_as_needed - Creates docker network for Hyrax and"
-    loggy "                          httpd, as needed."
-    loggy "         delete_network - Deletes the docker network for Hyrax"
-    loggy "                          and httpd."
-    loggy ""
+
+    local usage_doc
+    usage_doc=$(
+        cat << EOF
+NAME
+  hyraxctl - hyrax control
+
+SYNOPSIS
+  hyraxctl cmd1 [cmd2 ... cmdN]
+
+DESCRIPTION
+  The hyraxctl utility implements a collection of commands that
+  allow one to start, stop, and update Hyrax and Apache httpd docker
+  images with all of the configuration and resources needed to
+  operate test.opendap.org.
+  The commands can be invoked by using one or more in the hyraxctl
+  commandline line invocation:
+
+      ./hyraxctl show_config
+
+  Or, for two or more commands:
+
+      ./hyraxctl config_test_opendap_org start_all
+
+  Primary configuration values can be exported in the parent shell
+  in order to inject different. Additionally, the file can be
+  sourced:
+
+      source ./hyraxctl
+      . ./hyraxctl
+
+  After which all of the commands will be directly available in the current
+  shell:
+      # . ./hyraxctl
+      # show_config
+      # start_all
+      # stop_all
+
+   The available commands follow:
+
+            show_config - Sends the configuration state to stderr.
+config_test_opendap_org - Configures the shell for deployment on
+                          test.opendap.org (ubuntu Docker host)
+       config_ndp_local - Configures the shell for dev deployment
+                          on ndp\'s system.
+   config_rocky_8_local - Configures the shell for aam AWS rocky8 system
+                          and user rocky.
+
+       enable_debugging - Launches an instance set up with debuginfo symbols
+                          and core dumps enabled. AWS CLI must be conifgured!
+
+              start_all - Makes the docker network, starts Hyrax,
+                          starts httpd.
+               stop_all - Stops and deletes all containers, deletes
+                          docker network.
+            start_hyrax - Starts Hyrax in the docker engine using
+                          configuration values in the env.
+             stop_hyrax - Deletes the running (or not) hyrax
+                          container from the docker engine.
+           update_hyrax - Pulls the latest HYRAX_IMAGE tag (currently:
+                          $HYRAX_IMAGE), stops the Hyrax container,
+                          and then starts the (possibly updated) image.
+            start_httpd - Starts httpd in the docker engine using
+                          configuration values in the env.
+             stop_httpd - Deletes the running (or not) httpd
+                          container from the docker engine.
+           update_httpd - Pulls the latest HYRAX_IMAGE tag (currently:
+                          $HTTPD_IMAGE), stops the Hyrax container,
+                          and then starts the (possibly updated) image.
+   clean_and_update_all - Stops and deletes all containers, deletes
+                          docker network, deletes all images, pulls
+                          Hyrax and httpd by tag
+
+ make_network_as_needed - Creates docker network for Hyrax and
+                          httpd, as needed.
+         delete_network - Deletes the docker network for Hyrax
+                          and httpd.
+EOF
+    )
+
+    warning_doc=$(  cat << EOF
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  WARNING: Your current user-id is: '$USER'
+  WARNING: You must be the root user in order to use the functions in this script.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+EOF
+    )
+
+    loggy "$H1"
+    loggy "$usage_doc"
     if test "$USER" != "root"; then
-        loggy ""
-        loggy "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        loggy "WARNING: Your current user-id is: '$USER'"
-        loggy "WARNING: You must be the root user in order to use the functions in this script."
-        loggy "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        loggy ""
+        loggy "$warning_doc"
     fi
     loggy "$H3"
 }
