@@ -906,7 +906,7 @@ function usage_all() {
     usage_all=$(
         cat << EOF
 NAME
-  hyraxctl - hyrax control ALL functions
+  hyraxctl - hyrax control, all defined functions
 
 FUNCTIONS:
     check_for_aws_config
@@ -929,6 +929,7 @@ FUNCTIONS:
 
     config_test_opendap_org
         This is the thing then.
+
     config_tomcat_server
 
     delete_network
