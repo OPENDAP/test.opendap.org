@@ -95,10 +95,10 @@ export log_file
 function get_recent_docker_image_tag_names() {
     local prolog="get_recent_docker_image_tag_names() -"
     loggy "$prolog BEGIN"
-    
+
     local dockerhub_ns="${1:-"opendap"}"
     loggy "$prolog     dockerhub_ns: $dockerhub_ns"
-    
+
     local dockerhub_repo="${2:-"hyrax"}"
     loggy "$prolog   dockerhub_repo: $dockerhub_repo"
 
@@ -901,19 +901,140 @@ function dsh() {
     loggy ""
     docker exec -it "$HYRAX_NAME" /bin/bash -c "$@"
 }
+function usage_all() {
+    local usage_all
+    usage_all=$(
+        cat << EOF
+NAME
+  hyraxctl - hyrax control ALL functions
+
+FUNCTIONS:
+    check_for_aws_config
+        Checks and returns non zero status if aws cli is not configured.
+
+    clean_and_update_all
+        Stops and removes all containers and local images. Updates images. No restart.
+
+    clean_hyrax_logs
+        Removes all of the persistent log files for clean restart.
+
+    config_ndp
+        Config for Potter's situation
+
+    config_ndp_local
+        Config for Potter's situation
+
+    config_rocky_8
+    config_rocky_8_local
+
+    config_test_opendap_org
+        This is the thing then.
+    config_tomcat_server
+
+    delete_network
+        Deletes docker network
+
+    dsh
+        New version of dshell that takes a bash script as a parameter
+
+    dshell
+        opens an interactive shell with the HYRAX_NAME docker container
+
+    enable_core_dump
+        Configures the container OS to create a stored core dump files.
+
+    enable_debugging
+        Enables runtime debugging by installing debug rpms and calling enable_core_dump
+
+    get_platform
+        Get the dpcker --platform switch if the host is an arm64
+
+    get_recent_docker_image_tag_names
+        Scans org/repo (opendap/hyrax) for the most recent tags.
+
+    install_linux_debug_packages
+        Just what it says, used by enabled_debugging
+
+    loggy
+        Simple output formatter
+
+    make_network_as_needed
+        If not present, makes a docker network for our httpd and hyrax deployments
+        to utilize.
+
+    run_cmd
+        I don\'t know if we ever use this scriopt this way
+        deprecated?
+
+    save_hyrax_logs
+        Saves the various hyrax logs to the crash_logs directory.
+
+    set_file_permissions
+        Starts hyrax, watches the docker logs, collects the uid:gid of the bes, and
+        then massages the permissions on the various data mounts to match.
+
+    show_config
+        Show the current configuration state. Like a filtered pretty print env
+
+    start_all
+        Start httpd and hyrax, make_network_as_needed.
+
+    start_debug
+        Start hyrax with debugging enabled (rocky only)
+
+    start_httpd
+        Start the Apache Web Server, httpd.
+
+    start_hyrax
+        Start the hyrax container.
+
+    stop_all
+        Forcibly stops amd removes all of the containers.
+
+    stop_httpd
+        Stop the Apache Web Server, httpd.
+
+    stop_hyrax
+        Stop the hyrax container
+
+    update_httpd
+        Update the https docker image.
+
+    update_hyrax
+        Update the hyrax docker image.
+
+    usage
+        Print the basic usage message.
+
+    usage_all
+        Print this message
+EOF
+    )
+
+    # Do the usage/warning things...
+    loggy "$H1"
+    loggy "$usage_all"
+    if test "$USER" != "root";
+    then
+        loggy "$warning_doc"
+    fi
+    loggy "$H3"
+
+}
 
 ################################################################################
 #
 # usage()
+#  Written as a HERE document just to simplify the editing.
 #
 function usage() {
 
-
+    # Slurp up a HERE document for the usage text output.
     local usage_doc
     usage_doc=$(
         cat << EOF
 NAME
-  hyraxctl - hyrax control
+  hyraxctl - hyrax control script
 
 SYNOPSIS
   hyraxctl cmd1 [cmd2 ... cmdN]
@@ -988,6 +1109,7 @@ config_test_opendap_org - Configures the shell for deployment on
 EOF
     )
 
+    # Slurp up a HERE document for the warning text output.
     warning_doc=$(  cat << EOF
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   WARNING: Your current user-id is: '$USER'
@@ -995,7 +1117,7 @@ EOF
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 EOF
     )
-
+    # Do the usage/warning things...
     loggy "$H1"
     loggy "$usage_doc"
     if test "$USER" != "root"; then
