@@ -547,7 +547,7 @@ function save_hyrax_logs() {
 # start_simple()
 #
 function start_debug() {
-    local prolog="start_hyrax() -"
+    local prolog="start_debug() -"
     loggy "$prolog BEGIN"
 
     save_hyrax_logs
@@ -601,6 +601,11 @@ function start_hyrax() {
     local use_disconnect="${disconnect:-"-d"}"
     loggy "$prolog use_disconnect: $use_disconnect"
 
+    # The options --cap-add=SYS_PTRACE --security-opt seccomp=unconfined enables gdb to attach to processes in the container.
+    # It is a security risk so we only use these options if the environment variable $ptrace_options is set. jhrg 4/24/26
+    local use_ptrace="${ptrace_options:-""}"
+    loggy "$prolog use_ptrace: $use_ptrace"
+
     local platform=""
     platform="$(get_platform)"
     loggy "$prolog platform: $platform"
@@ -608,7 +613,7 @@ function start_hyrax() {
     loggy "$prolog run_privileged: $run_privileged"
 
     loggy "$prolog Starting Hyrax container: $HYRAX_IMAGE"
-    docker run $use_disconnect $run_privileged $platform \
+    docker run $use_disconnect $run_privileged $platform $use_ptrace \
         --name "$HYRAX_NAME" \
         --net="$HYRAX_NETWORK" \
         --publish 8009:8009 \
@@ -733,7 +738,7 @@ function install_linux_debug_packages() {
 
 ################################################################################
 # enable_debugging()
-# Installs all the poackages
+# Installs all the packages
 # This will call enable_core_dump() which stops and then starts the server
 # so the server should available for interrogation and configuration.
 #
