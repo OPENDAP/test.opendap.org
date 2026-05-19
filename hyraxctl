@@ -54,6 +54,20 @@ export run_privileged
 export log_file
 
 ################################################################################
+# Remove all containers
+#
+function drmac(){
+    docker rm -f $(docker ps -aq);
+}
+
+################################################################################
+# Remove all images
+#
+function drmai(){
+    docker rmi -f $(docker images -q);
+}
+
+################################################################################
 #
 # get_recent_docker_image_tag_names()
 #
