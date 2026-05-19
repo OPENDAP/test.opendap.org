@@ -48,6 +48,8 @@ export THREDDS_CATALOG_ROOT="${THREDDS_CATALOG_ROOT:-""}"
 export HYRAX_MEMORY="${HYRAX_MEMORY:-"24g"}"
 export RPM_BUILD_REPO="s3://opendap.travis.build"
 
+export  AUTH_WEB_XML="$HYRAX_HOME/tomcat/web.xml"
+
 export bes_cores_dir
 export tomcat_server_xml
 export run_privileged
@@ -610,6 +612,14 @@ function start_hyrax() {
         return 1
     fi
 
+    local auth_volume=
+    local use_auth_filters="${AUTH_ENABLED:-false}"
+    if $use_auth_filters
+    then
+        loggy "$prolog Enabling authentication filters using web.xml: $AUTH_WEB_XML"
+        auth_volume="--volume $AUTH_WEB_XML:/usr/share/tomcat/webapps/opendap/WEB-INF/web.xml"
+    fi
+
     make_network_as_needed
 
     local use_disconnect="${disconnect:-"-d"}"
@@ -627,7 +637,7 @@ function start_hyrax() {
         --net="$HYRAX_NETWORK" \
         --publish 8009:8009 \
         --publish 8080:8080 \
-        --publish 8443:8443 \
+        --publish 8443:8443 $auth_volume \
         --volume "$data_dir":/usr/share/hyrax:ro \
         --volume "$bes_log_dir":/var/log/bes \
         --volume "$bes_cores_dir":/cores \
