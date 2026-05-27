@@ -48,8 +48,8 @@ export THREDDS_CATALOG_ROOT="${THREDDS_CATALOG_ROOT:-""}"
 export HYRAX_MEMORY="${HYRAX_MEMORY:-"24g"}"
 export RPM_BUILD_REPO="s3://opendap.travis.build"
 
-export  AUTH_WEB_XML="$HYRAX_HOME/tomcat/web.xml"
-
+export AUTH_WEB_XML="${AUTH_WEB_XML:-"$HYRAX_HOME/tomcat/auth_web.xml"}"
+export AUTH_ENABLED="${AUTH_ENABLED:-false}"
 export bes_cores_dir
 export tomcat_server_xml
 export run_privileged
@@ -151,6 +151,11 @@ function show_config() {
     loggy "$prolog          HYRAX_NETWORK: $HYRAX_NETWORK"
     loggy "$prolog       HYRAX_DEPLOYMENT: $HYRAX_DEPLOYMENT"
     loggy "$prolog           HYRAX_MEMORY: $HYRAX_MEMORY"
+    loggy "$prolog"
+    loggy "$prolog           AUTH_WEB_XML: $AUTH_WEB_XML"
+    loggy "$prolog           AUTH_ENABLED: $AUTH_ENABLED"
+    loggy "$prolog"
+    loggy "$prolog"
     loggy "$prolog"
     loggy "$prolog-- Values derived from primary values: "
     loggy "$prolog"
