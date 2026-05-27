@@ -49,8 +49,8 @@ export HYRAX_MEMORY="${HYRAX_MEMORY:-"24g"}"
 export RPM_BUILD_REPO="s3://opendap.travis.build"
 
 # uid: 101 gid: 1000
-export BES_UID="$(BES_UID:-101)"
-export BES_GID="$(BES_GID:-1000)"
+export BES_UID="$(BES_UID:-"101")"
+export BES_GID="$(BES_GID:-"1000")"
 
 export AUTH_WEB_XML="${AUTH_WEB_XML:-"$HYRAX_HOME/tomcat/auth_web.xml"}"
 export AUTH_ENABLED="${AUTH_ENABLED:-false}"
