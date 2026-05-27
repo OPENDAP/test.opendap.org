@@ -470,6 +470,8 @@ function set_file_permissions() {
         loggy "$prolog Waiting $sleep_time seconds for hyrax to get going..."
         sleep $sleep_time
 
+        loggy "$(docker logs "$name")"
+
         local bes_uid
         bes_uid=$(docker logs "$name" 2>&1 | grep bes_uid | awk '{print $2;}')
         loggy "$prolog bes_uid: $bes_uid"
