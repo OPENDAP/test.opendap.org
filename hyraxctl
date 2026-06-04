@@ -463,9 +463,10 @@ function set_file_permissions() {
     if test $? -ne 0; then
         if test -n "$BES_UID" && test -n "$BES_GID"; then
             loggy "$prolog Setting ownership of '$bes_log_dir'"
-            sudo chown -R "$BES_UID":"$BES_GID" "$bes_log_dir"
+            sudo chown -v -R "$BES_UID":"$BES_GID" "$bes_log_dir"
         else
-            loggy "$prolog ERROR - Failed to determine one or both of bes user uid or gid. BES_UID: $BES_UID BES_GID: $BES_GID"
+            loggy "$prolog ERROR - Failed to determine one or both of bes user uid or gid."
+            loggy "$prolog ERROR - Found BES_UID: '$BES_UID' BES_GID: '$BES_GID'"
             return 1
         fi
     else
