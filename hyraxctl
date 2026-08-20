@@ -178,7 +178,6 @@ function show_config() {
     loggy "$prolog               httpd_conf: $httpd_conf"
     loggy "$prolog           htdocs_content: $htdocs_content"
     loggy "$prolog               expires_sh: $expires_sh"
-    loggy "$prolog                    ncwms: $ncwms"
     loggy "$prolog"
     loggy "$prolog $H2"
 }
@@ -262,9 +261,6 @@ function config_test_opendap_org() {
     # A: No we can't without fixing various things
     export expires_sh="$hyrax_home/httpd/cgi-bin/expires.sh"
 
-    # ncWMS host name to be injected into the ncWMS configuration.
-    export ncwms="$HYRAX_DEPLOYMENT"
-
     show_config
 
     loggy "$prolog END"
@@ -293,7 +289,6 @@ function config_ndp() {
     loggy "$prolog $H1"
     loggy "$prolog BEGIN"
     loggy "$prolog "
-    export ncwms="http://localhost:8080"
     export log_dir="$hyrax_home/log"
     export bes_log_dir="$log_dir/bes"
     export bes_cores_dir="$hyrax_home/bes/cores"
@@ -338,7 +333,6 @@ function config_rocky_8() {
     prefix=${prefix:-"/home/rocky/hyrax/build"}
     export data_dir="$prefix/share/hyrax"
 
-    export ncwms="http://localhost:8080"
     export log_dir="$hyrax_home/log"
     export bes_log_dir="$log_dir/bes"
     export bes_cores_dir="$hyrax_home/bes/cores"
@@ -636,8 +630,8 @@ function start_hyrax() {
         $tomcat_server_xml_volume \
         "$HYRAX_IMAGE" \
         -e support@opendap.org \
-        -s \
-        -n $ncwms
+        -s
+
     loggy "$prolog"
     loggy "$prolog Docker container: $HYRAX_IMAGE STARTED."
     loggy "$prolog"
