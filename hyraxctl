@@ -609,6 +609,7 @@ function start_hyrax() {
     make_network_as_needed
 
     local use_disconnect="${disconnect:-"-d"}"
+    loggy "$prolog     disconnect: $disconnect"
     loggy "$prolog use_disconnect: $use_disconnect"
 
     local platform=""
